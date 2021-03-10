@@ -37,7 +37,6 @@ async fn main() -> std::io::Result<()> {
     let pool = create_pg_pool().await;
 
     let local = task::LocalSet::new();
-
     local.run_until(async move {
         task::spawn_local(async move {
             HttpServer::new(move || {
