@@ -1,5 +1,6 @@
 pub mod db;
 pub mod services;
+pub mod utils;
 
 use actix_web::{ web,App,HttpServer };
 use actix_web::middleware::Logger;
