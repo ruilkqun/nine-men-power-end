@@ -7,3 +7,24 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+actix-web = "3"
+
+# 序列化
+serde = { version = "*", features = ["derive"] }
+serde_derive = "*"
+serde_json = "*"
+
+# 日志
+log = "0.4.0"
+env_logger = "0.6.0"
+
+# 异步连接池
+deadpool-postgres = { version = "0.7" }
+tokio-postgres = { version = "0.7", features = ["with-uuid-0_8"] }
+
+# 时间
+chrono = "0.4.19"
+
+# 运行时
+tokio = { version = "1.3.0", features = ["full"] }
+actix-rt = "2.1.0"
