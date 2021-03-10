@@ -33,19 +33,11 @@ async fn main() -> std::io::Result<()> {
 
     let pool = create_pg_pool().await;
 
-    let public_thread = thread::spawn(
-        move || {
-            let mut sys = System::new("public");
-            let srv = HttpServer::new( move || {
-                App::new().data(pool.clone())
-                    .route("user",web::get().to(get_user))
-                    .wrap(Logger::default())
-                    .wrap(Logger::new("%a %{User-Agent}i"))
-            }).bind("127.0.0.1:9000").unwrap().run();
-            sys.block_on(srv).unwrap();
-        }
-    );
 
-    public_thread.join().unwrap();
-    Ok(())
+    HttpServer::new( move || {
+        App::new().data(pool.clone())
+            .route("user",web::get().to(get_user))
+            .wrap(Logger::default())
+            .wrap(Logger::new("%a %{User-Agent}i"))
+    }).bind("127.0.0.1:9000")?.run().await
 }
