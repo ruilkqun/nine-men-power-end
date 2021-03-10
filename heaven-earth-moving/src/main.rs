@@ -13,6 +13,9 @@ use db::create_pg_pool;
 use services::handle::user::get_user;
 
 
+use tokio::task;
+
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let env = Env::default().default_filter_or("info");
@@ -33,11 +36,22 @@ async fn main() -> std::io::Result<()> {
 
     let pool = create_pg_pool().await;
 
+    let local = task::LocalSet::new();
 
-    HttpServer::new( move || {
-        App::new().data(pool.clone())
-            .route("user",web::get().to(get_user))
-            .wrap(Logger::default())
-            .wrap(Logger::new("%a %{User-Agent}i"))
-    }).bind("127.0.0.1:9000")?.run().await
+    local.run_until(async move {
+        task::spawn_local(async move {
+            HttpServer::new(move || {
+            App::new()
+                .data(pool.clone())
+                .route("user",web::get().to(get_user))
+                .wrap(Logger::default())
+                .wrap(Logger::new("%a %{User-Agent}i"))
+        })
+        .bind("127.0.0.1:9000")
+        .unwrap()
+        .run().await.unwrap();
+        }).await.unwrap();
+    }).await;
+
+    Ok(())
 }
