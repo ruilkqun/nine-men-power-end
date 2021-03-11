@@ -1,0 +1,11 @@
+version: "2"
+services:
+  rustenv:
+    image: rust_dev
+    container_name: zhaomin
+    restart: always
+    ports:
+    - 9000:9000
+    volumes:
+    - ./heaven-earth-moving:/srv
+    command: tail -f /dev/null

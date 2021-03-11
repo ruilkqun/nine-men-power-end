@@ -30,3 +30,12 @@ tokio = { version = "1.3.0", features = ["full"] }
 
 # 认证
 jsonwebtoken = "7"
+
+# 鉴权
+actix-casbin= {version = "0.4.2", default-features = false, features = [ "runtime-tokio" ]}
+actix-casbin-auth = {version = "0.4.4", default-features = false, features = [ "runtime-tokio" ]}
+## 从postgresql读取rbac_policy信息
+diesel-adapter = { version = "0.9.0", features = ["postgres"] }
+
+# 读toml
+toml = "0.5.8"
