@@ -5,10 +5,12 @@ extern crate env_logger;
 pub mod db;
 pub mod services;
 pub mod utils;
+pub mod models;
 
 use actix_web::{ web,App,HttpServer };
 use actix_web::middleware::Logger;
 use actix_web::rt::System;
+use actix_cors::Cors;
 
 use toml::value::*;
 use std::fs::File;
@@ -28,6 +30,9 @@ use std::io::Write;
 use db::create_pg_pool;
 
 use services::handle::user::get_user;
+use services::handle::login::login;
+
+use services::factory::api_routes;
 
 
 use tokio::task;
@@ -109,7 +114,14 @@ async fn main() -> std::io::Result<()> {
             HttpServer::new(move || {
             App::new()
                 .data(pool.clone())
-                .route("user",web::get().to(get_user))
+                .wrap(
+                    Cors::default()
+                        .allow_any_header()
+                        .allow_any_method()
+                        .allow_any_origin())
+                .service(api_routes())
+                // .route("user",web::get().to(get_user))
+                // .route("login",web::post().to(login))
                 .wrap(Logger::default())
                 .wrap(Logger::new("%a %{User-Agent}i"))
         })
