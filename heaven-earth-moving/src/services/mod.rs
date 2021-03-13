@@ -14,5 +14,6 @@ pub mod factory {
         web::scope("")
             .service(login::login)
             .service(user::get_user)
+            .service(user::get_user_info)
     }
 }
