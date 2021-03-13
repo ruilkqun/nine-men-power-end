@@ -1,8 +1,10 @@
 use actix_web::{ web, Responder, Error };
 use deadpool_postgres::{ Manager, Pool };
-use actix_web::get;
+use actix_web::{ get,post };
 use actix_web::web::Json;
-use crate::models::user::{ UserInfoEntity,UserInfoEntityItem };
+use crate::models::user::{ UserInfoEntity,UserInfoEntityItem,CreateUserInfoResponseEntity,CreateUserInfoEntity };
+use crate::models::status::Status;
+use chrono::prelude::*;
 
 
 #[get("/user")]
@@ -14,7 +16,7 @@ pub async fn get_user(db:web::Data<Pool>) -> impl Responder {
 }
 
 
-#[get("/user_info")]
+#[get("/user/user_info")]
 pub async fn get_user_info(db:web::Data<Pool>) -> Result<Json<UserInfoEntity>,Error > {
     let mut conn = db.get().await.unwrap();
     let user_info = conn.query("select * from admin", &[]).await.unwrap();
@@ -37,9 +39,39 @@ pub async fn get_user_info(db:web::Data<Pool>) -> Result<Json<UserInfoEntity>,Er
         count,
        }
     ))
+}
 
 
+#[post("/user/create_user")]
+pub async fn create_user(data:web::Json<CreateUserInfoEntity>,db:web::Data<Pool>) -> Result<Json<CreateUserInfoResponseEntity>,Error > {
+    let mut conn = db.get().await.unwrap();
 
-    // let v:String = rows[0].get("account");
+    let base_time = Local::now();
+    let format_time = base_time.format("%Y-%m-%d %H:%M:%S").to_string();
 
+
+    let user_account = data.user_account.clone();
+    let user_password = data.user_password.clone();
+    let user_phone = data.user_phone.clone();
+    let user_note = data.user_note.clone();
+    let user_create_date = format_time.clone();
+
+    let insert_result = conn.execute("insert into admin(account,password,phone,note,create_date) values ($1,$2,$3,$4,$5)", &[&user_account,&user_password,&user_phone,&user_note,&user_create_date]).await;
+
+    match insert_result {
+        Ok(_) => { println!("创建用户成功!");
+            Ok(
+                    Json(CreateUserInfoResponseEntity {
+                    result: Status::SUCCESS,
+                })
+            )
+        },
+        Err(e) => { println!("创建用户失败!失败原因:{:?}",e);
+            Ok(
+                    Json(CreateUserInfoResponseEntity {
+                    result: Status::FAIL,
+                })
+            )
+        },
+    }
 }
