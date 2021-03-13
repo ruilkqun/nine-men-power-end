@@ -35,3 +35,19 @@ pub struct CreateUserInfoEntity {
 pub struct CreateUserInfoResponseEntity {
     pub result: Status
 }
+
+
+// 删除账户信息 请求体
+#[derive(Deserialize,Debug)]
+pub struct RemoveUserInfoEntity {
+    pub user_id: i64,
+    pub user_account: String,
+    pub user_phone: String
+}
+
+
+// 删除账户信息 返回体
+#[derive(Serialize)]
+pub struct RemoveUserInfoResponseEntity {
+    pub result: Status
+}

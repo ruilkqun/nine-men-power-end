@@ -16,5 +16,6 @@ pub mod factory {
             .service(user::get_user)
             .service(user::get_user_info)
             .service(user::create_user)
+            .service(user::remove_user)
     }
 }

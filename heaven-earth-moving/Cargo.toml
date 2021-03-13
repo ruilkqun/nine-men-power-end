@@ -43,3 +43,6 @@ actix-cors = { git = "https://github.com/andy128k/actix-extras.git", branch = "u
 
 # 读toml
 toml = "0.5.8"
+
+# 加密
+rust-crypto = "^0.2"
