@@ -8,7 +8,7 @@ pub mod factory {
     use actix_web::dev::HttpServiceFactory;
     use actix_web::web;
 
-    use crate::services::handle::{ login,user };
+    use crate::services::handle::{ login,user,plan };
 
     pub fn api_routes() -> impl HttpServiceFactory {
         web::scope("")
@@ -17,5 +17,7 @@ pub mod factory {
             .service(user::get_user_info)
             .service(user::create_user)
             .service(user::remove_user)
+            .service(plan::get_plan_info)
+            .service(plan::create_plan)
     }
 }
