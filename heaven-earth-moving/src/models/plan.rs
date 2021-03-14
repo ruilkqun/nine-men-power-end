@@ -44,3 +44,19 @@ pub struct CreatePlanInfoEntity {
 pub struct CreatePlanInfoResponseEntity {
     pub result: Status
 }
+
+
+// 更新 进度信息 请求体
+#[derive(Deserialize,Debug)]
+pub struct UpdatePlanScheduleEntity {
+    pub plan_id: i64,
+    pub plan_account: String,
+    pub plan_schedule: String
+}
+
+
+// 更新 进度信息 返回体
+#[derive(Serialize)]
+pub struct UpdatePlanScheduleResponseEntity {
+    pub result: Status
+}

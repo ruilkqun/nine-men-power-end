@@ -19,5 +19,6 @@ pub mod factory {
             .service(user::remove_user)
             .service(plan::get_plan_info)
             .service(plan::create_plan)
+            .service(plan::adjust_schedule)
     }
 }
