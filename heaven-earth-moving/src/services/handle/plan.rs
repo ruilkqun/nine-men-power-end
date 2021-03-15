@@ -2,6 +2,7 @@ use actix_web::{ web, Responder, Error };
 use deadpool_postgres::{ Manager, Pool };
 use actix_web::{ get,post };
 use actix_web::web::Json;
+use tokio_postgres::Row;
 use crate::models::plan::{ PlanInfoEntityRequest,PlanInfoEntity,PlanInfoEntityItem,CreatePlanInfoEntity,CreatePlanInfoResponseEntity,UpdatePlanScheduleEntity,UpdatePlanScheduleResponseEntity };
 use crate::models::status::Status;
 use chrono::prelude::*;
@@ -12,7 +13,25 @@ pub async fn get_plan_info(data:web::Json<PlanInfoEntityRequest>,db:web::Data<Po
     let mut conn = db.get().await.unwrap();
 
     let status = data.status.clone();
-    let plan_info = conn.query("select * from plan where status=$1", &[&status]).await.unwrap();
+
+    let mut plan_info= conn.query("select * from plan", &[]).await.unwrap();
+
+    if status == "".to_string() {
+            plan_info = conn.query("select * from plan", &[]).await.unwrap();
+    } else {
+        let tmp = status.split(',');
+        for v in tmp {
+            if v == "全选" {
+                plan_info = conn.query("select * from plan", &[]).await.unwrap();
+                break;
+            } else {
+                plan_info = conn.query("select * from plan where status=$1", &[&v]).await.unwrap();
+                break;
+            }
+        }
+    }
+    println!("status:{:?}",status);
+
 
     let mut data = Vec::new();
     let count = plan_info.len();
@@ -111,5 +130,41 @@ pub async fn adjust_schedule(data:web::Json<UpdatePlanScheduleEntity>,db:web::Da
                 })
             )
         },
+    }
+}
+
+
+
+#[get("/plan/statistic_plan")]
+pub async fn statistic_plan(db:web::Data<Pool>) -> impl Responder {
+    let base_time = Local::now();
+    let scheduler_time = base_time.format("%Y-%m-%d").to_string();
+    println!("Begin Statistic Plan Count {}",scheduler_time);
+    let mut conn = db.get().await.unwrap();
+
+    let mut statistic_running:i64 = 0;
+    let mut statistic_completed:i64 = 0;
+
+    let statistic_running_result = conn.query("select count(status) from plan where status='进行中'", &[]).await.unwrap();
+    let statistic_completed_result = conn.query("select count(status) from plan where status='已完成'", &[]).await.unwrap();
+
+    if statistic_running_result.len() != 0 {
+        statistic_running = statistic_running_result[0].get("count");
+    }
+
+    if statistic_completed_result.len() != 0 {
+        statistic_completed = statistic_completed_result[0].get("count");
+    }
+
+    let insert_statistic_result = conn.execute("insert into plan_statistic(statistical_time,statistical_running_count,statistical_completed_count) values ($1,$2,$3) on conflict(statistical_time) do update set statistical_running_count=$2,statistical_completed_count=$3", &[&scheduler_time,&statistic_running,&statistic_completed]).await;
+
+
+    match insert_statistic_result {
+        Ok(_) => {
+            format!("统计数据成功!")
+        },
+        Err(e) => {
+            format!("统计数据失败!失败原因:{:?}",e)
+        }
     }
 }

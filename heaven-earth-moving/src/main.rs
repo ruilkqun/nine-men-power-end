@@ -29,13 +29,15 @@ use std::thread;
 use std::io::Write;
 use db::create_pg_pool;
 
+use tokio::task;
+
 use services::handle::user::get_user;
 use services::handle::login::login;
 
 use services::factory::api_routes;
 
 
-use tokio::task;
+use crate::utils::delay_statistical_plan_count::schedule_statistic_plan;
 
 
 #[actix_web::main]
@@ -55,6 +57,7 @@ async fn main() -> std::io::Result<()> {
         })
         .init();
 
+    schedule_statistic_plan();
 
     let file_path = "./qiaofeng.toml";
     let mut file = match File::open(file_path) {
