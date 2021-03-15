@@ -21,5 +21,6 @@ pub mod factory {
             .service(plan::create_plan)
             .service(plan::adjust_schedule)
             .service(plan::statistic_plan)
+            .service(plan::statistic_info)
     }
 }

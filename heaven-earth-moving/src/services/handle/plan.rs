@@ -3,7 +3,8 @@ use deadpool_postgres::{ Manager, Pool };
 use actix_web::{ get,post };
 use actix_web::web::Json;
 use tokio_postgres::Row;
-use crate::models::plan::{ PlanInfoEntityRequest,PlanInfoEntity,PlanInfoEntityItem,CreatePlanInfoEntity,CreatePlanInfoResponseEntity,UpdatePlanScheduleEntity,UpdatePlanScheduleResponseEntity };
+use crate::models::plan::{ PlanInfoEntityRequest,PlanInfoEntity,PlanInfoEntityItem,CreatePlanInfoEntity,CreatePlanInfoResponseEntity,UpdatePlanScheduleEntity,UpdatePlanScheduleResponseEntity,
+StatisticPlanInfoEntityRequest,StatisticPlanInfoEntity,StatisticPlanInfoEntityTimeItem,StatisticPlanInfoEntityRunItem,StatisticPlanInfoEntityCompletedItem};
 use crate::models::status::Status;
 use chrono::prelude::*;
 
@@ -167,4 +168,90 @@ pub async fn statistic_plan(db:web::Data<Pool>) -> impl Responder {
             format!("统计数据失败!失败原因:{:?}",e)
         }
     }
+}
+
+
+
+#[post("/plan/statistic_info")]
+pub async fn statistic_info(data:web::Json<StatisticPlanInfoEntityRequest>,db:web::Data<Pool>) -> Result<Json<StatisticPlanInfoEntity>,Error > {
+    let mut conn = db.get().await.unwrap();
+
+    let statistical_time = data.statistical_time.clone();
+
+    let tmp = statistical_time.split(',');
+    let mut tmp_vec = Vec::new();
+
+    for i in tmp {
+        tmp_vec.push(i);
+    }
+
+    let begin_tmp = match tmp_vec.get_mut(0){
+        Some(r) => r,
+        None => ""
+    };
+    let end_tmp = match tmp_vec.get_mut(1){
+        Some(r) => r,
+        None => ""
+    };
+    let mut begin_tmp1 = "";
+    if begin_tmp != "" {
+        let tmp = begin_tmp.split(' ');
+        let mut tmp_vec = Vec::new();
+        for v in tmp {
+            tmp_vec.push(v);
+        }
+        begin_tmp1 = match tmp_vec.get_mut(0){
+            Some(r) => r,
+            None => ""
+        };
+    }
+
+    let mut end_tmp1 = "";
+    if end_tmp != "" {
+        let tmp = end_tmp.split(' ');
+        let mut tmp_vec = Vec::new();
+        for v in tmp {
+            tmp_vec.push(v);
+        }
+        end_tmp1 = match tmp_vec.get_mut(0){
+            Some(r) => r,
+            None => ""
+        };
+    }
+
+    println!("begin_tmp1:{:?}",begin_tmp1);
+    println!("end_tmp1:{:?}",end_tmp1);
+
+
+    let statistic_info = conn.query("select * from plan_statistic where statistical_time >= $1 and statistical_time <= $2", &[&begin_tmp1,&end_tmp1]).await.unwrap();
+
+
+    let mut data_statistical_time = Vec::new();
+    let mut data_statistical_running_count = Vec::new();
+    let mut data_statistical_completed_count = Vec::new();
+
+    let count = statistic_info.len();
+    for i in 0..count {
+        let tmp_statistical_time = StatisticPlanInfoEntityTimeItem {
+            statistical_time: statistic_info[i].get("statistical_time")
+        };
+        data_statistical_time.push(tmp_statistical_time);
+
+        let tmp_statistical_running_count = StatisticPlanInfoEntityRunItem {
+            statistical_running_count: statistic_info[i].get("statistical_running_count")
+        };
+        data_statistical_running_count.push(tmp_statistical_running_count);
+
+        let tmp_statistical_completed_count = StatisticPlanInfoEntityCompletedItem {
+            statistical_completed_count: statistic_info[i].get("statistical_completed_count")
+        };
+        data_statistical_completed_count.push(tmp_statistical_completed_count);
+    }
+
+    Ok(Json( StatisticPlanInfoEntity {
+        statistical_time:data_statistical_time,
+        statistical_running_count:data_statistical_running_count,
+        statistical_completed_count:data_statistical_completed_count
+       }
+    ))
 }

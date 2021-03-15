@@ -60,3 +60,39 @@ pub struct UpdatePlanScheduleEntity {
 pub struct UpdatePlanScheduleResponseEntity {
     pub result: Status
 }
+
+
+
+// 获取 计划执行情况 信息 请求体
+#[derive(Deserialize,Debug)]
+pub struct StatisticPlanInfoEntityRequest {
+    pub statistical_time: String,
+}
+
+
+// 获取 计划执行情况 信息 返回体
+#[derive(Serialize,Debug)]
+pub struct StatisticPlanInfoEntity {
+    pub statistical_time: Vec<StatisticPlanInfoEntityTimeItem>,
+    pub statistical_running_count: Vec<StatisticPlanInfoEntityRunItem>,
+    pub statistical_completed_count: Vec<StatisticPlanInfoEntityCompletedItem>,
+}
+
+// 获取 统计时间 每条信息 返回体
+#[derive(Serialize,Debug)]
+pub struct StatisticPlanInfoEntityTimeItem {
+    pub statistical_time: String,
+
+}
+
+// 获取 统计运行数 每条信息 返回体
+#[derive(Serialize,Debug)]
+pub struct StatisticPlanInfoEntityRunItem {
+    pub statistical_running_count: i64,
+}
+
+// 获取 统计完成数 每条信息 返回体
+#[derive(Serialize,Debug)]
+pub struct StatisticPlanInfoEntityCompletedItem {
+    pub statistical_completed_count: i64,
+}
