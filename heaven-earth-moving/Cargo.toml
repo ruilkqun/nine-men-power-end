@@ -51,4 +51,4 @@ rust-crypto = "^0.2"
 delay_timer = {  version = "0.3.1", features = ["full"]  }
 
 # http请求库
-http = "0.2.3"
+curl = "0.4.35"

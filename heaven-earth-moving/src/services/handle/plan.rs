@@ -139,7 +139,7 @@ pub async fn adjust_schedule(data:web::Json<UpdatePlanScheduleEntity>,db:web::Da
 #[get("/plan/statistic_plan")]
 pub async fn statistic_plan(db:web::Data<Pool>) -> impl Responder {
     let base_time = Local::now();
-    let scheduler_time = base_time.format("%Y-%m-%d").to_string();
+    let scheduler_time = base_time.format("%Y-%m-%d %H:%M:%S").to_string();
     println!("Begin Statistic Plan Count {}",scheduler_time);
     let mut conn = db.get().await.unwrap();
 
@@ -219,11 +219,12 @@ pub async fn statistic_info(data:web::Json<StatisticPlanInfoEntityRequest>,db:we
         };
     }
 
+    /// 最初设想 入库时间精度为天 即%Y-%m-%d,故计算到begin_tmp1，end_tmp1
     println!("begin_tmp1:{:?}",begin_tmp1);
     println!("end_tmp1:{:?}",end_tmp1);
 
-
-    let statistic_info = conn.query("select * from plan_statistic where statistical_time >= $1 and statistical_time <= $2", &[&begin_tmp1,&end_tmp1]).await.unwrap();
+    /// 最终计划 入库时间精度为秒 即%Y-%m-%d %H:%M:%S，故取begin_tmp，end_tmp即可
+    let statistic_info = conn.query("select * from plan_statistic where statistical_time >= $1 and statistical_time <= $2", &[&begin_tmp,&end_tmp]).await.unwrap();
 
 
     let mut data_statistical_time = Vec::new();

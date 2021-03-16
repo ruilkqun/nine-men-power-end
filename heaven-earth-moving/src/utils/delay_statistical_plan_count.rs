@@ -5,7 +5,7 @@ use delay_timer::entity::DelayTimerBuilder;
 use chrono::prelude::*;
 use delay_timer::timer::task::TaskBuilder;
 
-use http::Request;
+use curl::easy::Easy;
 
 
 enum AuspiciousTime {
@@ -15,20 +15,17 @@ enum AuspiciousTime {
 impl Into<CandyCronStr> for AuspiciousTime {
     fn into(self) -> CandyCronStr {
         match self {
-            Self::PerOneHour => CandyCronStr("0 0 0/1 * * * *".to_string()),
+            Self::PerOneHour => CandyCronStr("0 0/30 * * * * *".to_string()),
         }
     }
 }
 
 
 pub fn statistic_plan_count() {
-    let resp = Request::builder()
-      .uri("http://127.0.0.1:9000/plan/statistic_plan")
-      .header("User-Agent", "awesome/1.0")
-      .body(())
-      .unwrap();
-
-    println!("resp:{:?}",resp)
+    let mut easy = Easy::new();
+    easy.url("http://127.0.0.1:9000/plan/statistic_plan").unwrap();
+    easy.perform().unwrap();
+    println!("{}", easy.response_code().unwrap());
 }
 
 
