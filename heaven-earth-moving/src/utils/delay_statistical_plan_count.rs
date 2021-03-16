@@ -15,7 +15,7 @@ enum AuspiciousTime {
 impl Into<CandyCronStr> for AuspiciousTime {
     fn into(self) -> CandyCronStr {
         match self {
-            Self::PerOneHour => CandyCronStr("0 0/1 * * * * *".to_string()),
+            Self::PerOneHour => CandyCronStr("0 0/30 * * * * *".to_string()),
         }
     }
 }
