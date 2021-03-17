@@ -8,7 +8,7 @@ pub mod factory {
     use actix_web::dev::HttpServiceFactory;
     use actix_web::web;
 
-    use crate::services::handle::{ login,user,plan };
+    use crate::services::handle::{ login,user,plan,article };
 
     pub fn api_routes() -> impl HttpServiceFactory {
         web::scope("")
@@ -22,5 +22,9 @@ pub mod factory {
             .service(plan::adjust_schedule)
             .service(plan::statistic_plan)
             .service(plan::statistic_info)
+            .service(article::create_classify)
+            .service(article::get_classify_info)
+            .service(article::remove_classify)
+            .service(article::update_classify)
     }
 }
