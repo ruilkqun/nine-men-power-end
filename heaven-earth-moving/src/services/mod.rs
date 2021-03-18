@@ -8,7 +8,7 @@ pub mod factory {
     use actix_web::dev::HttpServiceFactory;
     use actix_web::web;
 
-    use crate::services::handle::{ login,user,plan,article };
+    use crate::services::handle::{ login,user,plan,article,image };
 
     pub fn api_routes() -> impl HttpServiceFactory {
         web::scope("")
@@ -26,5 +26,7 @@ pub mod factory {
             .service(article::get_classify_info)
             .service(article::remove_classify)
             .service(article::update_classify)
+            .service(image::upload_img)
+            .service(article::create_article)
     }
 }

@@ -3,7 +3,7 @@ use deadpool_postgres::{ Manager, Pool };
 use actix_web::{ get,post };
 use actix_web::web::Json;
 use tokio_postgres::Row;
-use crate::models::article::{ ClassifyInfoEntity,ClassifyInfoEntityItem,CreateClassifyInfoEntity,CreateClassifyInfoResponseEntity,RemoveClassifyInfoEntity,RemoveClassifyInfoResponseEntity,UpdateClassifyInfoEntity,UpdateClassifyInfoResponseEntity };
+use crate::models::article::{ ClassifyInfoEntity,ClassifyInfoEntityItem,CreateClassifyInfoEntity,CreateClassifyInfoResponseEntity,RemoveClassifyInfoEntity,RemoveClassifyInfoResponseEntity,UpdateClassifyInfoEntity,UpdateClassifyInfoResponseEntity,CreateArticleInfoEntity,CreateArticleInfoResponseEntity };
 use crate::models::status::Status;
 use chrono::prelude::*;
 use snowflake::SnowflakeIdGenerator;
@@ -113,6 +113,40 @@ pub async fn update_classify(data:web::Json<UpdateClassifyInfoEntity>,db:web::Da
         Err(e) => { println!("删除分类失败!失败原因:{:?}",e);
             Ok(
                     Json(UpdateClassifyInfoResponseEntity {
+                    result: Status::FAIL,
+                })
+            )
+        },
+    }
+}
+
+
+#[post("/article/create_article")]
+pub async fn create_article(data:web::Json<CreateArticleInfoEntity>,db:web::Data<Pool>) -> Result<Json<CreateArticleInfoResponseEntity>,Error > {
+    let mut conn = db.get().await.unwrap();
+
+    let mut id_generator = SnowflakeIdGenerator::new(1,1);
+    let mut global_id = id_generator.real_time_generate();
+
+    let  article_id =  global_id.clone().to_string();
+    let  article_account = data.article_account.clone();
+    let  article_classify = data.article_classify.clone();
+    let  article_title = data.article_title.clone();
+    let  article_content = data.article_content.clone();
+
+    let insert_result = conn.execute("insert into article(classify_id,article_account,article_classify,article_title,article_content) values ($1,$2,$3,$4,$5)", &[&article_id,&article_account,&article_classify,&article_title,&article_content]).await;
+
+    match insert_result {
+        Ok(_) => { println!("创建文章成功!");
+            Ok(
+                    Json(CreateArticleInfoResponseEntity {
+                    result: Status::SUCCESS,
+                })
+            )
+        },
+        Err(e) => { println!("创建文章失败!失败原因:{:?}",e);
+            Ok(
+                    Json(CreateArticleInfoResponseEntity {
                     result: Status::FAIL,
                 })
             )

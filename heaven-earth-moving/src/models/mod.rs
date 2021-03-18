@@ -3,3 +3,4 @@ pub mod user;
 pub mod status;
 pub mod plan;
 pub mod article;
+pub mod image;

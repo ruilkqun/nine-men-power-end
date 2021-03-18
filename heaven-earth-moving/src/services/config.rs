@@ -28,3 +28,19 @@ pub struct PostgresqlConfigItem {
     pub pwd: Option<String>,
     pub db: Option<String>,
 }
+
+
+#[derive(Deserialize,Debug)]
+pub struct BackendConfig {
+    pub backend_config: Option<BackendConfigItem>,
+}
+
+
+#[derive(Deserialize,Debug)]
+pub struct BackendConfigItem {
+    pub host: Option<String>,
+    pub port: Option<u16>,
+    pub nginx_host: Option<String>,
+    pub nginx_port: Option<u16>,
+    pub images: Option<String>,
+}

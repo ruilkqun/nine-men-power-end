@@ -10,3 +10,11 @@ port = 5432
 user = "taiji"
 pwd = "zhangsanfeng"
 db = "taiji"
+
+
+[backend_config]
+host = "192.168.1.118"
+port = 9000
+nginx_host = "192.168.1.118"
+nginx_port = 8088
+images = "http://192.168.1.118:8088/images/"

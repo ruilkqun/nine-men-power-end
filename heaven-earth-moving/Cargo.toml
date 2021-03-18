@@ -55,3 +55,6 @@ curl = "0.4.35"
 
 # 雪花算法生成全局唯一ID
 rs-snowflake = "*"
+
+# base64
+base64 = "0.13.0"

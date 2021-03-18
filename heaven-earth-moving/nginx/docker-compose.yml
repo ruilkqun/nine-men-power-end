@@ -1,0 +1,13 @@
+version: "2"
+services:
+  rustenv:
+    image: nginx
+    container_name: fengqingyang
+    restart: unless-stopped
+    ports:
+    - 8088:80
+    environment:
+    - TZ=Asia/Shanghai
+    volumes:
+    - ./nginx:/etc/nginx
+    - ./static:/root/static

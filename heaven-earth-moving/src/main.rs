@@ -117,6 +117,8 @@ async fn main() -> std::io::Result<()> {
             HttpServer::new(move || {
             App::new()
                 .data(pool.clone())
+                .data(web::PayloadConfig::new(1 << 25))
+                .data(web::JsonConfig::default().limit(1024 * 1024 * 50))
                 .wrap(
                     Cors::default()
                         .allow_any_header()
