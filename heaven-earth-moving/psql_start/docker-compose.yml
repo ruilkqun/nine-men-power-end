@@ -1,0 +1,14 @@
+version: "3"
+services:
+  db:
+    container_name: pg
+    restart: always
+    image: postgres:latest
+    privileged: true
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: 2020Successful!
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./pv:/var/lib/postgresql/data/pgdata
