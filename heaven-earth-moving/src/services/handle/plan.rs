@@ -224,7 +224,7 @@ pub async fn statistic_info(data:web::Json<StatisticPlanInfoEntityRequest>,db:we
     println!("end_tmp1:{:?}",end_tmp1);
 
     /// 最终计划 入库时间精度为秒 即%Y-%m-%d %H:%M:%S，故取begin_tmp，end_tmp即可
-    let statistic_info = conn.query("select * from plan_statistic where statistical_time >= $1 and statistical_time <= $2", &[&begin_tmp,&end_tmp]).await.unwrap();
+    let statistic_info = conn.query("select * from plan_statistic where statistical_time >= $1 and statistical_time <= $2 order by statistical_time asc", &[&begin_tmp,&end_tmp]).await.unwrap();
 
 
     let mut data_statistical_time = Vec::new();
