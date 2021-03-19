@@ -2,7 +2,6 @@ use serde::{Deserialize,Serialize};
 use crate::models::status::Status;
 use serde_json::Value;
 
-
 // 获取文章分类 总信息 返回体
 #[derive(Serialize,Debug)]
 pub struct ClassifyInfoEntity {
@@ -64,11 +63,12 @@ pub struct UpdateClassifyInfoResponseEntity {
 // 创建文章 请求体
 #[derive(Deserialize,Debug)]
 pub struct CreateArticleInfoEntity {
-    pub article_id: String,
+    // pub article_id: String,
     pub article_account: String,
     pub article_classify: String,
     pub article_title: String,
     pub article_content: Value,
+    pub article_image: Vec<String>
 }
 
 

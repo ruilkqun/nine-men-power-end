@@ -3,7 +3,7 @@ use deadpool_postgres::{ Manager, Pool };
 use actix_web::{ get,post };
 use actix_web::web::Json;
 use tokio_postgres::Row;
-use crate::models::image::{ UploadImageEntity,UploadImageResponseEntity };
+use crate::models::image::{ UploadImageEntity,UploadImageResponseEntity,DeleteImageEntity,DeleteImageResponseEntity };
 use crate::models::status::Status;
 use chrono::prelude::*;
 use snowflake::SnowflakeIdGenerator;
@@ -11,11 +11,12 @@ use snowflake::SnowflakeIdGenerator;
 use base64::{encode, decode};
 use std::io::prelude::*;
 use std::fs::File;
+use std::fs;
 use crate::services::config::BackendConfig;
 
 
 #[post("/img/upload_img")]
-pub async fn upload_img(data:web::Json<UploadImageEntity>, db:web::Data<Pool>) -> Result<Json<UploadImageResponseEntity>,Error >  {
+pub async fn upload_img(data:web::Json<UploadImageEntity>) -> Result<Json<UploadImageResponseEntity>,Error >  {
     let mut id_generator = SnowflakeIdGenerator::new(1,1);
     let mut global_id = id_generator.real_time_generate();
 
@@ -62,6 +63,7 @@ pub async fn upload_img(data:web::Json<UploadImageEntity>, db:web::Data<Pool>) -
                     Ok(
                             Json(UploadImageResponseEntity {
                                 path: image_url_path,
+                                image_id: global_id.clone().to_string(),
                                 result: Status::SUCCESS,
                         })
                     )
@@ -70,6 +72,7 @@ pub async fn upload_img(data:web::Json<UploadImageEntity>, db:web::Data<Pool>) -
                     Ok(
                             Json(UploadImageResponseEntity {
                                 path: "".to_string(),
+                                image_id: "".to_string(),
                                 result: Status::SUCCESS,
                         })
                     )
@@ -80,9 +83,27 @@ pub async fn upload_img(data:web::Json<UploadImageEntity>, db:web::Data<Pool>) -
             Ok(
                     Json(UploadImageResponseEntity {
                         path: "".to_string(),
+                        image_id: "".to_string(),
                         result: Status::FAIL,
                 })
             )
         },
     }
+}
+
+
+
+#[post("/img/delete_img")]
+pub async fn delete_img(data:web::Json<DeleteImageEntity>) -> Result<Json<DeleteImageResponseEntity>,Error >  {
+    let mut global_id = data.image_id.clone();
+    let path = format!("./nginx/static/images/{}.png",global_id);
+
+    println!("path:{:?}",path);
+    fs::remove_file(path).unwrap();
+
+    Ok(
+        Json(DeleteImageResponseEntity {
+            result: Status::SUCCESS,
+        })
+    )
 }

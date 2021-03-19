@@ -134,7 +134,27 @@ pub async fn create_article(data:web::Json<CreateArticleInfoEntity>,db:web::Data
     let  article_title = data.article_title.clone();
     let  article_content = data.article_content.clone();
 
-    let insert_result = conn.execute("insert into article(classify_id,article_account,article_classify,article_title,article_content) values ($1,$2,$3,$4,$5)", &[&article_id,&article_account,&article_classify,&article_title,&article_content]).await;
+    let  image_id = data.article_image.clone();
+
+    for v in image_id {
+        let insert_image_result = conn.execute("insert into image_id(article_id,article_image_id) values ($1,$2)", &[&article_id,&v]).await;
+        match insert_image_result {
+            Ok(_) => {
+                continue
+            },
+            Err(e) => {
+                println!("创建文章失败!失败原因:{:?}",e);
+                return Ok(
+                        Json(CreateArticleInfoResponseEntity {
+                        result: Status::FAIL,
+                    })
+                )
+            },
+        }
+    }
+
+
+    let insert_result = conn.execute("insert into article(article_id,article_account,article_classify,article_title,article_content) values ($1,$2,$3,$4,$5)", &[&article_id,&article_account,&article_classify,&article_title,&article_content]).await;
 
     match insert_result {
         Ok(_) => { println!("创建文章成功!");

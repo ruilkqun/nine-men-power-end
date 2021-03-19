@@ -28,5 +28,6 @@ pub mod factory {
             .service(article::update_classify)
             .service(image::upload_img)
             .service(article::create_article)
+            .service(image::delete_img)
     }
 }
