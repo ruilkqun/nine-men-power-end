@@ -3,7 +3,7 @@ use deadpool_postgres::{ Manager, Pool };
 use actix_web::{ get,post };
 use actix_web::web::Json;
 use tokio_postgres::Row;
-use crate::models::article::{ ClassifyInfoEntity,ClassifyInfoEntityItem,CreateClassifyInfoEntity,CreateClassifyInfoResponseEntity,RemoveClassifyInfoEntity,RemoveClassifyInfoResponseEntity,UpdateClassifyInfoEntity,UpdateClassifyInfoResponseEntity,CreateArticleInfoEntity,CreateArticleInfoResponseEntity };
+use crate::models::article::{ ClassifyInfoEntity,ClassifyInfoEntityItem,CreateClassifyInfoEntity,CreateClassifyInfoResponseEntity,RemoveClassifyInfoEntity,RemoveClassifyInfoResponseEntity,UpdateClassifyInfoEntity,UpdateClassifyInfoResponseEntity,CreateArticleInfoEntity,CreateArticleInfoResponseEntity,ArticleListInfoEntity,ArticleListInfoEntityItem };
 use crate::models::status::Status;
 use chrono::prelude::*;
 use snowflake::SnowflakeIdGenerator;
@@ -124,6 +124,8 @@ pub async fn update_classify(data:web::Json<UpdateClassifyInfoEntity>,db:web::Da
 #[post("/article/create_article")]
 pub async fn create_article(data:web::Json<CreateArticleInfoEntity>,db:web::Data<Pool>) -> Result<Json<CreateArticleInfoResponseEntity>,Error > {
     let mut conn = db.get().await.unwrap();
+    let base_time = Local::now();
+    let format_time = base_time.format("%Y-%m-%d %H:%M:%S").to_string();
 
     let mut id_generator = SnowflakeIdGenerator::new(1,1);
     let mut global_id = id_generator.real_time_generate();
@@ -133,6 +135,7 @@ pub async fn create_article(data:web::Json<CreateArticleInfoEntity>,db:web::Data
     let  article_classify = data.article_classify.clone();
     let  article_title = data.article_title.clone();
     let  article_content = data.article_content.clone();
+    let article_create_date = format_time.clone();
 
     let  image_id = data.article_image.clone();
 
@@ -154,7 +157,7 @@ pub async fn create_article(data:web::Json<CreateArticleInfoEntity>,db:web::Data
     }
 
 
-    let insert_result = conn.execute("insert into article(article_id,article_account,article_classify,article_title,article_content) values ($1,$2,$3,$4,$5)", &[&article_id,&article_account,&article_classify,&article_title,&article_content]).await;
+    let insert_result = conn.execute("insert into article(article_id,article_account,article_classify,article_title,article_content,article_create_date) values ($1,$2,$3,$4,$5,$6)", &[&article_id,&article_account,&article_classify,&article_title,&article_content,&article_create_date]).await;
 
     match insert_result {
         Ok(_) => { println!("创建文章成功!");
@@ -172,4 +175,33 @@ pub async fn create_article(data:web::Json<CreateArticleInfoEntity>,db:web::Data
             )
         },
     }
+}
+
+
+#[get("/article/list_info")]
+pub async fn get_list_info(db:web::Data<Pool>) -> Result<Json<ArticleListInfoEntity>,Error > {
+    let mut conn = db.get().await.unwrap();
+
+    let mut list_info= conn.query("select * from article", &[]).await.unwrap();
+
+    let mut data = Vec::new();
+    let count = list_info.len();
+
+
+    for i in 0..count {
+        let tmp = ArticleListInfoEntityItem {
+            article_id: list_info[i].get("article_id"),
+            article_account: list_info[i].get("article_account"),
+            article_classify: list_info[i].get("article_classify"),
+            article_title: list_info[i].get("article_title"),
+            article_create_date: list_info[i].get("article_create_date")
+        };
+        data.push(tmp);
+    }
+
+    Ok(Json( ArticleListInfoEntity {
+        data,
+        count,
+       }
+    ))
 }

@@ -68,7 +68,8 @@ pub struct CreateArticleInfoEntity {
     pub article_classify: String,
     pub article_title: String,
     pub article_content: Value,
-    pub article_image: Vec<String>
+    pub article_image: Vec<String>,
+    // pub article_create_date: String
 }
 
 
@@ -76,4 +77,24 @@ pub struct CreateArticleInfoEntity {
 #[derive(Serialize)]
 pub struct CreateArticleInfoResponseEntity {
     pub result: Status
+}
+
+
+
+
+// 获取文章列表 总信息 返回体
+#[derive(Serialize,Debug)]
+pub struct ArticleListInfoEntity {
+    pub data: Vec<ArticleListInfoEntityItem>,
+    pub count: usize
+}
+
+// 获取文章列表 每条信息 返回体
+#[derive(Serialize,Debug)]
+pub struct ArticleListInfoEntityItem {
+    pub article_id: String,
+    pub article_account: String,
+    pub article_classify: String,
+    pub article_title: String,
+    pub article_create_date: String
 }
