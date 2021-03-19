@@ -3,7 +3,7 @@ use deadpool_postgres::{ Manager, Pool };
 use actix_web::{ get,post };
 use actix_web::web::Json;
 use tokio_postgres::Row;
-use crate::models::article::{ ClassifyInfoEntity,ClassifyInfoEntityItem,CreateClassifyInfoEntity,CreateClassifyInfoResponseEntity,RemoveClassifyInfoEntity,RemoveClassifyInfoResponseEntity,UpdateClassifyInfoEntity,UpdateClassifyInfoResponseEntity,CreateArticleInfoEntity,CreateArticleInfoResponseEntity,ArticleListInfoEntity,ArticleListInfoEntityItem };
+use crate::models::article::{ ClassifyInfoEntity,ClassifyInfoEntityItem,CreateClassifyInfoEntity,CreateClassifyInfoResponseEntity,RemoveClassifyInfoEntity,RemoveClassifyInfoResponseEntity,UpdateClassifyInfoEntity,UpdateClassifyInfoResponseEntity,CreateArticleInfoEntity,CreateArticleInfoResponseEntity,ArticleListInfoEntity,ArticleListInfoEntityItem,ArticleInfoEntityRequest,ArticleInfoEntityResponse };
 use crate::models::status::Status;
 use chrono::prelude::*;
 use snowflake::SnowflakeIdGenerator;
@@ -202,6 +202,21 @@ pub async fn get_list_info(db:web::Data<Pool>) -> Result<Json<ArticleListInfoEnt
     Ok(Json( ArticleListInfoEntity {
         data,
         count,
+       }
+    ))
+}
+
+// 获取文章内容
+#[post("/article/article_info")]
+pub async fn get_article_info(data:web::Json<ArticleInfoEntityRequest>,db:web::Data<Pool>) -> Result<Json<ArticleInfoEntityResponse>,Error > {
+    let mut conn = db.get().await.unwrap();
+    let article_id = data.article_id.clone();
+    // article_id 全局唯一，最多一条返回
+    let mut article_info= conn.query("select * from article where article_id=$1", &[&article_id]).await.unwrap();
+    let article_content = article_info[0].get("article_content");
+
+    Ok(Json( ArticleInfoEntityResponse {
+        article_content
        }
     ))
 }

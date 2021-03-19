@@ -98,3 +98,17 @@ pub struct ArticleListInfoEntityItem {
     pub article_title: String,
     pub article_create_date: String
 }
+
+
+// 获取 文章内容信息 请求体
+#[derive(Deserialize,Debug)]
+pub struct ArticleInfoEntityRequest {
+    pub article_id: String,
+}
+
+
+// 获取 文章内容信息 返回体
+#[derive(Serialize,Debug,Default)]
+pub struct ArticleInfoEntityResponse {
+    pub article_content: Value
+}

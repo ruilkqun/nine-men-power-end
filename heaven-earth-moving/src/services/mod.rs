@@ -30,5 +30,6 @@ pub mod factory {
             .service(article::create_article)
             .service(image::delete_img)
             .service(article::get_list_info)
+            .service(article::get_article_info)
     }
 }
