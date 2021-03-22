@@ -23,6 +23,7 @@ pub struct UserInfoEntity {
 pub struct UserInfoEntityItem {
     pub user_id: i64,
     pub user_account: String,
+    pub user_role: Vec<String>,
     pub user_phone: String,
     pub user_note: String,
     pub user_create_date: String
