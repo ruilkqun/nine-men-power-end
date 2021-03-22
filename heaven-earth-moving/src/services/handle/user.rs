@@ -23,7 +23,7 @@ pub async fn get_user(db:web::Data<Pool>) -> impl Responder {
     format!("{}",v)
 }
 
-
+// 获取 账户信息
 #[post("/user/user_info")]
 pub async fn get_user_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<UserInfoEntityRequest>,db:web::Data<Pool>) -> Result<Json<UserInfoEntity>,Error > {
     let mut account:String = "".to_string();
@@ -36,7 +36,7 @@ pub async fn get_user_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<U
     let jwt_flag = decode_jwt(token);
     assert_eq!(jwt_flag, true);
     // 鉴权
-    let sheng_huo_ling = ["search_role","admin_role"];
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
     let a = enforcer.clone();
     let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
     let mut casbin_flag:bool = false;
@@ -75,8 +75,33 @@ pub async fn get_user_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<U
 }
 
 
+
+// 创建账户
 #[post("/user/create_user")]
-pub async fn create_user(data:web::Json<CreateUserInfoEntity>,db:web::Data<Pool>) -> Result<Json<CreateUserInfoResponseEntity>,Error > {
+pub async fn create_user(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<CreateUserInfoEntity>,db:web::Data<Pool>) -> Result<Json<CreateUserInfoResponseEntity>,Error > {
+    let mut account:String = "".to_string();
+    let mut token:String = "".to_string();
+
+    account = data.account.clone();
+    token = data.token.clone();
+
+    // 认证
+    let jwt_flag = decode_jwt(token);
+    assert_eq!(jwt_flag, true);
+    // 鉴权
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
+    let a = enforcer.clone();
+    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let mut casbin_flag:bool = false;
+    for k in sheng_huo_ling.iter(){
+        for v in e.iter(){
+            if k == v {
+                casbin_flag = true;
+            }
+        }
+    }
+    assert_eq!(casbin_flag, true);
+
     let mut conn = db.get().await.unwrap();
 
     let base_time = Local::now();
@@ -132,8 +157,32 @@ pub async fn create_user(data:web::Json<CreateUserInfoEntity>,db:web::Data<Pool>
 }
 
 
+// 删除账户
 #[post("/user/remove_user")]
-pub async fn remove_user(data:web::Json<RemoveUserInfoEntity>,db:web::Data<Pool>) -> Result<Json<RemoveUserInfoResponseEntity>,Error > {
+pub async fn remove_user(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<RemoveUserInfoEntity>,db:web::Data<Pool>) -> Result<Json<RemoveUserInfoResponseEntity>,Error > {
+    let mut account:String = "".to_string();
+    let mut token:String = "".to_string();
+
+    account = data.account.clone();
+    token = data.token.clone();
+
+    // 认证
+    let jwt_flag = decode_jwt(token);
+    assert_eq!(jwt_flag, true);
+    // 鉴权
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
+    let a = enforcer.clone();
+    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let mut casbin_flag:bool = false;
+    for k in sheng_huo_ling.iter(){
+        for v in e.iter(){
+            if k == v {
+                casbin_flag = true;
+            }
+        }
+    }
+    assert_eq!(casbin_flag, true);
+
     let mut conn = db.get().await.unwrap();
 
     let user_id = data.user_id.clone();
@@ -165,7 +214,30 @@ pub async fn remove_user(data:web::Json<RemoveUserInfoEntity>,db:web::Data<Pool>
 
 
 #[put("/user/change_account_role")]
-pub async fn change_user_role(data:web::Json<ChangeUserRoleInfoEntity>,db:web::Data<Pool>) -> Result<Json<ChangeUserRoleInfoResponseEntity>,Error > {
+pub async fn change_user_role(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<ChangeUserRoleInfoEntity>,db:web::Data<Pool>) -> Result<Json<ChangeUserRoleInfoResponseEntity>,Error > {
+    let mut account:String = "".to_string();
+    let mut token:String = "".to_string();
+
+    account = data.account.clone();
+    token = data.token.clone();
+
+    // 认证
+    let jwt_flag = decode_jwt(token);
+    assert_eq!(jwt_flag, true);
+    // 鉴权
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
+    let a = enforcer.clone();
+    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let mut casbin_flag:bool = false;
+    for k in sheng_huo_ling.iter(){
+        for v in e.iter(){
+            if k == v {
+                casbin_flag = true;
+            }
+        }
+    }
+    assert_eq!(casbin_flag, true);
+
     let mut conn = db.get().await.unwrap();
 
     let user_id = data.user_id.clone();

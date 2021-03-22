@@ -3,14 +3,43 @@ use deadpool_postgres::{ Manager, Pool };
 use actix_web::{ get,post };
 use actix_web::web::Json;
 use tokio_postgres::Row;
-use crate::models::article::{ ClassifyInfoEntity,ClassifyInfoEntityItem,CreateClassifyInfoEntity,CreateClassifyInfoResponseEntity,RemoveClassifyInfoEntity,RemoveClassifyInfoResponseEntity,UpdateClassifyInfoEntity,UpdateClassifyInfoResponseEntity,CreateArticleInfoEntity,CreateArticleInfoResponseEntity,ArticleListInfoEntity,ArticleListInfoEntityItem,ArticleInfoEntityRequest,ArticleInfoEntityResponse };
+use crate::models::article::{ ClassifyInfoRequestEntity,ClassifyInfoEntity,ClassifyInfoEntityItem,CreateClassifyInfoEntity,CreateClassifyInfoResponseEntity,RemoveClassifyInfoEntity,RemoveClassifyInfoResponseEntity,UpdateClassifyInfoEntity,UpdateClassifyInfoResponseEntity,CreateArticleInfoEntity,CreateArticleInfoResponseEntity,ArticleListInfoEntity,ArticleListInfoRequestEntity,ArticleListInfoEntityItem,ArticleInfoEntityRequest,ArticleInfoEntityResponse };
 use crate::models::status::Status;
 use chrono::prelude::*;
 use snowflake::SnowflakeIdGenerator;
 
+use std::sync::RwLock;
+use casbin::{Enforcer, CoreApi};
+use std::io::Read;
 
-#[get("/article/classify_info")]
-pub async fn get_classify_info(db:web::Data<Pool>) -> Result<Json<ClassifyInfoEntity>,Error > {
+use crate::utils::jwt::decode_jwt;
+
+// 获取 文章分类
+#[post("/article/classify_info")]
+pub async fn get_classify_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<ClassifyInfoRequestEntity>,db:web::Data<Pool>) -> Result<Json<ClassifyInfoEntity>,Error > {
+    let mut account:String = "".to_string();
+    let mut token:String = "".to_string();
+
+    account = data.account.clone();
+    token = data.token.clone();
+
+    // 认证
+    let jwt_flag = decode_jwt(token);
+    assert_eq!(jwt_flag, true);
+    // 鉴权
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
+    let a = enforcer.clone();
+    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let mut casbin_flag:bool = false;
+    for k in sheng_huo_ling.iter(){
+        for v in e.iter(){
+            if k == v {
+                casbin_flag = true;
+            }
+        }
+    }
+    assert_eq!(casbin_flag, true);
+
     let mut conn = db.get().await.unwrap();
 
     let mut classify_info= conn.query("select * from article_classify", &[]).await.unwrap();
@@ -34,9 +63,32 @@ pub async fn get_classify_info(db:web::Data<Pool>) -> Result<Json<ClassifyInfoEn
     ))
 }
 
-
+// 创建 文章分类
 #[post("/article/create_classify")]
-pub async fn create_classify(data:web::Json<CreateClassifyInfoEntity>,db:web::Data<Pool>) -> Result<Json<CreateClassifyInfoResponseEntity>,Error > {
+pub async fn create_classify(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<CreateClassifyInfoEntity>,db:web::Data<Pool>) -> Result<Json<CreateClassifyInfoResponseEntity>,Error > {
+    let mut account:String = "".to_string();
+    let mut token:String = "".to_string();
+
+    account = data.account.clone();
+    token = data.token.clone();
+
+    // 认证
+    let jwt_flag = decode_jwt(token);
+    assert_eq!(jwt_flag, true);
+    // 鉴权
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
+    let a = enforcer.clone();
+    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let mut casbin_flag:bool = false;
+    for k in sheng_huo_ling.iter(){
+        for v in e.iter(){
+            if k == v {
+                casbin_flag = true;
+            }
+        }
+    }
+    assert_eq!(casbin_flag, true);
+
     let mut conn = db.get().await.unwrap();
 
     let mut id_generator = SnowflakeIdGenerator::new(1,1);
@@ -66,8 +118,32 @@ pub async fn create_classify(data:web::Json<CreateClassifyInfoEntity>,db:web::Da
 }
 
 
+// 移除 文章 分类
 #[post("/article/remove_classify")]
-pub async fn remove_classify(data:web::Json<RemoveClassifyInfoEntity>,db:web::Data<Pool>) -> Result<Json<RemoveClassifyInfoResponseEntity>,Error > {
+pub async fn remove_classify(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<RemoveClassifyInfoEntity>,db:web::Data<Pool>) -> Result<Json<RemoveClassifyInfoResponseEntity>,Error > {
+    let mut account:String = "".to_string();
+    let mut token:String = "".to_string();
+
+    account = data.account.clone();
+    token = data.token.clone();
+
+    // 认证
+    let jwt_flag = decode_jwt(token);
+    assert_eq!(jwt_flag, true);
+    // 鉴权
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
+    let a = enforcer.clone();
+    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let mut casbin_flag:bool = false;
+    for k in sheng_huo_ling.iter(){
+        for v in e.iter(){
+            if k == v {
+                casbin_flag = true;
+            }
+        }
+    }
+    assert_eq!(casbin_flag, true);
+
     let mut conn = db.get().await.unwrap();
 
     let  classify_id = data.classify_id.clone();
@@ -93,8 +169,32 @@ pub async fn remove_classify(data:web::Json<RemoveClassifyInfoEntity>,db:web::Da
 }
 
 
+// 更新文章分类
 #[post("/article/update_classify")]
-pub async fn update_classify(data:web::Json<UpdateClassifyInfoEntity>,db:web::Data<Pool>) -> Result<Json<UpdateClassifyInfoResponseEntity>,Error > {
+pub async fn update_classify(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<UpdateClassifyInfoEntity>,db:web::Data<Pool>) -> Result<Json<UpdateClassifyInfoResponseEntity>,Error > {
+    let mut account:String = "".to_string();
+    let mut token:String = "".to_string();
+
+    account = data.account.clone();
+    token = data.token.clone();
+
+    // 认证
+    let jwt_flag = decode_jwt(token);
+    assert_eq!(jwt_flag, true);
+    // 鉴权
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
+    let a = enforcer.clone();
+    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let mut casbin_flag:bool = false;
+    for k in sheng_huo_ling.iter(){
+        for v in e.iter(){
+            if k == v {
+                casbin_flag = true;
+            }
+        }
+    }
+    assert_eq!(casbin_flag, true);
+
     let mut conn = db.get().await.unwrap();
 
     let  classify_name = data.classify_name.clone();
@@ -121,8 +221,32 @@ pub async fn update_classify(data:web::Json<UpdateClassifyInfoEntity>,db:web::Da
 }
 
 
+// 创建文章内容
 #[post("/article/create_article")]
-pub async fn create_article(data:web::Json<CreateArticleInfoEntity>,db:web::Data<Pool>) -> Result<Json<CreateArticleInfoResponseEntity>,Error > {
+pub async fn create_article(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<CreateArticleInfoEntity>,db:web::Data<Pool>) -> Result<Json<CreateArticleInfoResponseEntity>,Error > {
+    let mut account:String = "".to_string();
+    let mut token:String = "".to_string();
+
+    account = data.account.clone();
+    token = data.token.clone();
+
+    // 认证
+    let jwt_flag = decode_jwt(token);
+    assert_eq!(jwt_flag, true);
+    // 鉴权
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
+    let a = enforcer.clone();
+    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let mut casbin_flag:bool = false;
+    for k in sheng_huo_ling.iter(){
+        for v in e.iter(){
+            if k == v {
+                casbin_flag = true;
+            }
+        }
+    }
+    assert_eq!(casbin_flag, true);
+
     let mut conn = db.get().await.unwrap();
     let base_time = Local::now();
     let format_time = base_time.format("%Y-%m-%d %H:%M:%S").to_string();
@@ -177,9 +301,32 @@ pub async fn create_article(data:web::Json<CreateArticleInfoEntity>,db:web::Data
     }
 }
 
+// 获取文章列表信息
+#[post("/article/list_info")]
+pub async fn get_list_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<ArticleListInfoRequestEntity>,db:web::Data<Pool>) -> Result<Json<ArticleListInfoEntity>,Error > {
+    let mut account:String = "".to_string();
+    let mut token:String = "".to_string();
 
-#[get("/article/list_info")]
-pub async fn get_list_info(db:web::Data<Pool>) -> Result<Json<ArticleListInfoEntity>,Error > {
+    account = data.account.clone();
+    token = data.token.clone();
+
+    // 认证
+    let jwt_flag = decode_jwt(token);
+    assert_eq!(jwt_flag, true);
+    // 鉴权
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
+    let a = enforcer.clone();
+    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let mut casbin_flag:bool = false;
+    for k in sheng_huo_ling.iter(){
+        for v in e.iter(){
+            if k == v {
+                casbin_flag = true;
+            }
+        }
+    }
+    assert_eq!(casbin_flag, true);
+
     let mut conn = db.get().await.unwrap();
 
     let mut list_info= conn.query("select * from article", &[]).await.unwrap();
@@ -208,7 +355,30 @@ pub async fn get_list_info(db:web::Data<Pool>) -> Result<Json<ArticleListInfoEnt
 
 // 获取文章内容
 #[post("/article/article_info")]
-pub async fn get_article_info(data:web::Json<ArticleInfoEntityRequest>,db:web::Data<Pool>) -> Result<Json<ArticleInfoEntityResponse>,Error > {
+pub async fn get_article_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<ArticleInfoEntityRequest>,db:web::Data<Pool>) -> Result<Json<ArticleInfoEntityResponse>,Error > {
+    let mut account:String = "".to_string();
+    let mut token:String = "".to_string();
+
+    account = data.account.clone();
+    token = data.token.clone();
+
+    // 认证
+    let jwt_flag = decode_jwt(token);
+    assert_eq!(jwt_flag, true);
+    // 鉴权
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
+    let a = enforcer.clone();
+    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let mut casbin_flag:bool = false;
+    for k in sheng_huo_ling.iter(){
+        for v in e.iter(){
+            if k == v {
+                casbin_flag = true;
+            }
+        }
+    }
+    assert_eq!(casbin_flag, true);
+
     let mut conn = db.get().await.unwrap();
     let article_id = data.article_id.clone();
     // article_id 全局唯一，最多一条返回

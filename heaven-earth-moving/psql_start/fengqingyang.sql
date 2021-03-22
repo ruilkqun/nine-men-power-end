@@ -12,7 +12,7 @@
  Target Server Version : 130002
  File Encoding         : 65001
 
- Date: 20/03/2021 00:15:15
+ Date: 22/03/2021 14:03:44
 */
 
 
@@ -83,10 +83,11 @@ DROP TABLE IF EXISTS "public"."admin";
 CREATE TABLE "public"."admin" (
   "id" int8 NOT NULL DEFAULT nextval('user_id_seq'::regclass),
   "account" varchar(255) COLLATE "pg_catalog"."default" NOT NULL,
-  "password" varchar(255) COLLATE "pg_catalog"."default",
+  "password" varchar(255) COLLATE "pg_catalog"."default" NOT NULL,
   "phone" varchar(255) COLLATE "pg_catalog"."default" NOT NULL,
-  "note" varchar(255) COLLATE "pg_catalog"."default",
-  "create_date" varchar(255) COLLATE "pg_catalog"."default"
+  "note" varchar(255) COLLATE "pg_catalog"."default" NOT NULL,
+  "create_date" varchar(255) COLLATE "pg_catalog"."default" NOT NULL,
+  "role" varchar(255) COLLATE "pg_catalog"."default" NOT NULL
 )
 ;
 ALTER TABLE "public"."admin" OWNER TO "postgres";
@@ -95,13 +96,15 @@ COMMENT ON COLUMN "public"."admin"."password" IS '密码';
 COMMENT ON COLUMN "public"."admin"."phone" IS '手机号';
 COMMENT ON COLUMN "public"."admin"."note" IS '备注';
 COMMENT ON COLUMN "public"."admin"."create_date" IS '创建日期';
+COMMENT ON COLUMN "public"."admin"."role" IS '角色';
 
 -- ----------------------------
 -- Records of admin
 -- ----------------------------
 BEGIN;
-INSERT INTO "public"."admin" VALUES (1, 'zhangwuji', 'f492f6a473bdae86915f2940f0d59718', '15201776595', '明教教主', '2021-03-20 00:00:00');
-INSERT INTO "public"."admin" VALUES (6, 'linghuchong', 'a64a6d4d6d4f5bbdedb45df84d5cce76', '15201776595', '独孤九剑', '2021-03-13 23:24:28');
+INSERT INTO "public"."admin" VALUES (1, 'zhangwuji', 'f492f6a473bdae86915f2940f0d59718', '15201776595', '明教教主', '2021-03-20 00:00:00', 'admin_role');
+INSERT INTO "public"."admin" VALUES (8, 'ruilkyu', '22c38af1fa77de7c8356b5083a371ce6', '15201776595', '管理员账号', '2021-03-22 10:09:56', 'admin_role');
+INSERT INTO "public"."admin" VALUES (6, 'linghuchong', 'a64a6d4d6d4f5bbdedb45df84d5cce76', '15201776595', '独孤九剑', '2021-03-13 23:24:28', 'editor_role');
 COMMIT;
 
 -- ----------------------------
@@ -225,8 +228,6 @@ BEGIN;
 INSERT INTO "public"."plan" VALUES (22, 'ruilkyu', '2021-03-18 21:18:09', '2021-03-18 21:21:30', '乾坤大挪移 后端数据库 article表 添加 自增序列 CREATE SEQUENCE article_id_seq START 1; nextval(''article_id_seq''::regclass)', '100%', '已完成');
 INSERT INTO "public"."plan" VALUES (32, 'ruilkyu', '2021-03-19 14:51:10', '2021-03-19 14:54:23', '后端 数据库 article表添加article_create_date(文章创建时间)', '100%', '已完成');
 INSERT INTO "public"."plan" VALUES (20, 'ruilkyu', '2021-03-18 20:02:08', '2021-03-18 23:53:43', '乾坤大挪移 postgresql 添加文章存储数据表', '100%', '已完成');
-INSERT INTO "public"."plan" VALUES (2, '令狐冲', '2021-03-14 18:53:01', '', '学独孤九剑', '10%', '进行中');
-INSERT INTO "public"."plan" VALUES (3, '石破天', '2021-03-16 00:03:34', '', '学太玄经', '0%', '进行中');
 INSERT INTO "public"."plan" VALUES (4, 'ruilkyu', '2021-03-16 09:10:53', '2021-03-16 10:23:44', '定风珠数据库 expected_time新添规则表ru le', '100%', '已完成');
 INSERT INTO "public"."plan" VALUES (5, 'ruilkyu', '2021-03-16 09:29:50', '2021-03-16 10:23:53', '定风珠 后台新添加rule插入接口', '100%', '已完成');
 INSERT INTO "public"."plan" VALUES (7, 'ruilkyu', '2021-03-16 10:25:45', '2021-03-16 10:40:13', '定风珠后端 添加 预期rule查询接口', '100%', '已完成');
@@ -254,11 +255,24 @@ INSERT INTO "public"."plan" VALUES (26, 'ruilkyu', '2021-03-19 10:03:40', '2021-
 INSERT INTO "public"."plan" VALUES (31, 'ruilkyu', '2021-03-19 11:12:18', '2021-03-19 14:41:20', '乾坤大挪移 后端添加 删除图片接口', '100%', '已完成');
 INSERT INTO "public"."plan" VALUES (33, 'ruilkyu', '2021-03-19 14:53:14', '2021-03-19 14:54:16', '后端 CreateArticleInfoEntity结构体 添加pub article_create_date: String字段', '100%', '已完成');
 INSERT INTO "public"."plan" VALUES (34, 'ruilkyu', '2021-03-19 15:25:32', '2021-03-19 15:39:12', '后端 添加 文章列表信息接口', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (40, 'ruilkyu', '2021-03-20 19:40:35', '', '后端接口 添加jwt认证', '1%', '进行中');
 INSERT INTO "public"."plan" VALUES (25, 'ruilkyu', '2021-03-19 09:50:21', '2021-03-19 15:43:22', '前端添加 文章列表展示页', '100%', '已完成');
 INSERT INTO "public"."plan" VALUES (35, 'ruilkyu', '2021-03-19 15:51:48', '2021-03-19 17:56:24', '添加 markdown 展示页', '100%', '已完成');
 INSERT INTO "public"."plan" VALUES (1, 'zhangwuji', '2021-03-14 15:46:00', ' ', '学九阳神功', '80%', '进行中');
 INSERT INTO "public"."plan" VALUES (36, 'ruilkyu', '2021-03-19 19:33:02', '2021-03-19 21:04:59', '乾坤大挪移 后端 添加 根据文章ID返回文章内容 接口', '100%', '已完成');
-INSERT INTO "public"."plan" VALUES (37, 'ruilkyu', '2021-03-19 21:06:10', '', '前端添加 根据文章ID 跳转到指定文章页面模块功能', '1%', '进行中');
+INSERT INTO "public"."plan" VALUES (37, 'ruilkyu', '2021-03-19 21:06:10', '2021-03-20 00:22:25', '前端添加 根据文章ID 跳转到指定文章页面模块功能', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (2, '令狐冲', '2021-03-14 18:53:01', '', '学独孤九剑', '90%', '进行中');
+INSERT INTO "public"."plan" VALUES (3, '石破天', '2021-03-16 00:03:34', '', '学太玄经', '90%', '进行中');
+INSERT INTO "public"."plan" VALUES (43, 'ruilkyu', '2021-03-21 21:32:14', '2021-03-22 08:55:04', '后端 login接口 返回值添加角色role字段', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (42, 'ruilkyu', '2021-03-21 12:09:22', '2021-03-22 08:55:11', '后端 数据库 设计 用户角色表', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (41, 'ruilkyu', '2021-03-20 23:42:49', '2021-03-22 08:55:16', 'vue控制不同的用户看到不同的功能', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (44, 'ruilkyu', '2021-03-22 08:58:40', '2021-03-22 10:10:20', '用户 管理 添加 角色展示列', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (45, 'ruilkyu', '2021-03-22 09:30:11', '2021-03-22 10:10:34', '前端 添加管理员 增加角色模块', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (46, 'ruilkyu', '2021-03-22 09:30:30', '2021-03-22 10:10:37', '后端 添加管理员 增加角色类型', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (39, 'ruilkyu', '2021-03-20 19:35:20', '', 'casbin添加角色 admin_role、editor_role和visitor_role', '1%', '进行中');
+INSERT INTO "public"."plan" VALUES (48, 'ruilkyu', '2021-03-22 13:20:49', '2021-03-22 13:46:43', '后端 添加角色role更改接口', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (47, 'ruilkyu', '2021-03-22 11:15:40', '2021-03-22 13:46:49', '前端 用户管理 权限管理添加 角色role更改功能', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (38, 'ruilkyu', '2021-03-20 00:24:09', '2021-03-22 13:46:58', 'casbin用户权限管理', '100%', '已完成');
 COMMIT;
 
 -- ----------------------------
@@ -392,6 +406,107 @@ INSERT INTO "public"."plan_statistic" VALUES (123, '2021-03-19 22:30:01', 4, 33)
 INSERT INTO "public"."plan_statistic" VALUES (124, '2021-03-19 23:00:01', 4, 33);
 INSERT INTO "public"."plan_statistic" VALUES (125, '2021-03-19 23:30:01', 4, 33);
 INSERT INTO "public"."plan_statistic" VALUES (126, '2021-03-20 00:00:01', 4, 33);
+INSERT INTO "public"."plan_statistic" VALUES (127, '2021-03-20 00:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (128, '2021-03-20 01:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (129, '2021-03-20 01:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (130, '2021-03-20 02:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (131, '2021-03-20 02:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (132, '2021-03-20 03:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (133, '2021-03-20 03:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (134, '2021-03-20 04:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (135, '2021-03-20 04:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (136, '2021-03-20 05:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (137, '2021-03-20 05:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (138, '2021-03-20 06:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (139, '2021-03-20 06:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (140, '2021-03-20 07:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (141, '2021-03-20 07:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (142, '2021-03-20 08:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (143, '2021-03-20 08:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (144, '2021-03-20 09:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (145, '2021-03-20 09:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (146, '2021-03-20 10:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (147, '2021-03-20 10:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (148, '2021-03-20 11:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (149, '2021-03-20 11:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (150, '2021-03-20 12:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (151, '2021-03-20 12:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (152, '2021-03-20 13:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (153, '2021-03-20 13:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (154, '2021-03-20 14:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (155, '2021-03-20 14:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (156, '2021-03-20 15:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (157, '2021-03-20 15:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (158, '2021-03-20 16:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (159, '2021-03-20 16:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (160, '2021-03-20 17:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (161, '2021-03-20 17:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (162, '2021-03-20 18:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (163, '2021-03-20 18:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (164, '2021-03-20 19:00:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (165, '2021-03-20 19:30:01', 4, 34);
+INSERT INTO "public"."plan_statistic" VALUES (166, '2021-03-20 20:00:01', 6, 34);
+INSERT INTO "public"."plan_statistic" VALUES (167, '2021-03-20 20:30:01', 6, 34);
+INSERT INTO "public"."plan_statistic" VALUES (168, '2021-03-20 21:00:01', 6, 34);
+INSERT INTO "public"."plan_statistic" VALUES (169, '2021-03-20 21:30:01', 6, 34);
+INSERT INTO "public"."plan_statistic" VALUES (170, '2021-03-20 22:00:01', 6, 34);
+INSERT INTO "public"."plan_statistic" VALUES (171, '2021-03-20 22:30:01', 6, 34);
+INSERT INTO "public"."plan_statistic" VALUES (172, '2021-03-20 23:00:01', 6, 34);
+INSERT INTO "public"."plan_statistic" VALUES (173, '2021-03-20 23:30:01', 6, 34);
+INSERT INTO "public"."plan_statistic" VALUES (174, '2021-03-21 00:00:01', 7, 34);
+INSERT INTO "public"."plan_statistic" VALUES (175, '2021-03-21 12:00:01', 7, 34);
+INSERT INTO "public"."plan_statistic" VALUES (176, '2021-03-21 12:30:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (177, '2021-03-21 13:00:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (178, '2021-03-21 13:30:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (179, '2021-03-21 14:00:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (180, '2021-03-21 14:30:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (181, '2021-03-21 15:00:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (182, '2021-03-21 15:30:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (183, '2021-03-21 16:00:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (184, '2021-03-21 16:30:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (185, '2021-03-21 17:00:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (186, '2021-03-21 17:30:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (187, '2021-03-21 18:00:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (188, '2021-03-21 18:30:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (189, '2021-03-21 19:00:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (190, '2021-03-21 19:30:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (191, '2021-03-21 20:00:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (192, '2021-03-21 20:30:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (193, '2021-03-21 21:00:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (194, '2021-03-21 21:30:01', 8, 34);
+INSERT INTO "public"."plan_statistic" VALUES (195, '2021-03-21 22:00:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (196, '2021-03-21 22:30:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (197, '2021-03-21 23:00:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (198, '2021-03-21 23:30:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (199, '2021-03-22 00:00:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (200, '2021-03-22 00:30:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (201, '2021-03-22 01:00:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (202, '2021-03-22 01:30:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (203, '2021-03-22 02:00:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (204, '2021-03-22 02:30:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (205, '2021-03-22 03:00:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (206, '2021-03-22 03:30:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (207, '2021-03-22 04:00:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (208, '2021-03-22 04:30:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (209, '2021-03-22 05:00:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (210, '2021-03-22 05:30:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (211, '2021-03-22 06:00:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (212, '2021-03-22 06:30:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (213, '2021-03-22 07:00:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (214, '2021-03-22 07:30:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (215, '2021-03-22 08:00:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (216, '2021-03-22 08:30:01', 9, 34);
+INSERT INTO "public"."plan_statistic" VALUES (217, '2021-03-22 09:00:01', 7, 37);
+INSERT INTO "public"."plan_statistic" VALUES (218, '2021-03-22 09:30:01', 7, 37);
+INSERT INTO "public"."plan_statistic" VALUES (219, '2021-03-22 10:00:01', 9, 37);
+INSERT INTO "public"."plan_statistic" VALUES (220, '2021-03-22 10:30:01', 6, 40);
+INSERT INTO "public"."plan_statistic" VALUES (221, '2021-03-22 11:00:01', 6, 40);
+INSERT INTO "public"."plan_statistic" VALUES (222, '2021-03-22 11:30:01', 7, 40);
+INSERT INTO "public"."plan_statistic" VALUES (223, '2021-03-22 12:00:01', 7, 40);
+INSERT INTO "public"."plan_statistic" VALUES (224, '2021-03-22 12:30:01', 7, 40);
+INSERT INTO "public"."plan_statistic" VALUES (225, '2021-03-22 13:00:01', 7, 40);
+INSERT INTO "public"."plan_statistic" VALUES (226, '2021-03-22 13:30:01', 8, 40);
+INSERT INTO "public"."plan_statistic" VALUES (227, '2021-03-22 14:00:01', 5, 43);
 COMMIT;
 
 -- ----------------------------
@@ -399,14 +514,14 @@ COMMIT;
 -- ----------------------------
 SELECT setval('"public"."article_id_seq"', 2, false);
 SELECT setval('"public"."image_id_seq"', 3, true);
-SELECT setval('"public"."plan_id_seq"', 38, true);
-SELECT setval('"public"."plan_statistic_id_seq"', 127, true);
-SELECT setval('"public"."user_id_seq"', 8, true);
+SELECT setval('"public"."plan_id_seq"', 49, true);
+SELECT setval('"public"."plan_statistic_id_seq"', 228, true);
+SELECT setval('"public"."user_id_seq"', 9, true);
 
 -- ----------------------------
 -- Primary Key structure for table admin
 -- ----------------------------
-ALTER TABLE "public"."admin" ADD CONSTRAINT "admin_pkey" PRIMARY KEY ("id", "account");
+ALTER TABLE "public"."admin" ADD CONSTRAINT "admin_pkey" PRIMARY KEY ("account");
 
 -- ----------------------------
 -- Primary Key structure for table article

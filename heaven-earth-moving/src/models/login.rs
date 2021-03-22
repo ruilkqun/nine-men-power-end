@@ -16,5 +16,5 @@ pub struct LoginResponseEntity {
     pub message: String,
     pub data: Option<String>,
     pub token: String,
-    pub role: Vec<String>,
+    pub role: String,
 }

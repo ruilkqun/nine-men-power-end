@@ -8,9 +8,38 @@ StatisticPlanInfoEntityRequest,StatisticPlanInfoEntity,StatisticPlanInfoEntityTi
 use crate::models::status::Status;
 use chrono::prelude::*;
 
+use std::sync::RwLock;
+use casbin::{Enforcer, CoreApi};
+use std::io::Read;
 
+use crate::utils::jwt::decode_jwt;
+
+// 获取计划plan信息
 #[post("/plan/plan_info")]
-pub async fn get_plan_info(data:web::Json<PlanInfoEntityRequest>,db:web::Data<Pool>) -> Result<Json<PlanInfoEntity>,Error > {
+pub async fn get_plan_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<PlanInfoEntityRequest>,db:web::Data<Pool>) -> Result<Json<PlanInfoEntity>,Error > {
+    let mut account:String = "".to_string();
+    let mut token:String = "".to_string();
+
+    account = data.account.clone();
+    token = data.token.clone();
+
+    // 认证
+    let jwt_flag = decode_jwt(token);
+    assert_eq!(jwt_flag, true);
+    // 鉴权
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
+    let a = enforcer.clone();
+    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let mut casbin_flag:bool = false;
+    for k in sheng_huo_ling.iter(){
+        for v in e.iter(){
+            if k == v {
+                casbin_flag = true;
+            }
+        }
+    }
+    assert_eq!(casbin_flag, true);
+
     let mut conn = db.get().await.unwrap();
 
     let status = data.status.clone();
@@ -58,9 +87,32 @@ pub async fn get_plan_info(data:web::Json<PlanInfoEntityRequest>,db:web::Data<Po
 }
 
 
-
+// 创建计划plan
 #[post("/plan/create_plan")]
-pub async fn create_plan(data:web::Json<CreatePlanInfoEntity>,db:web::Data<Pool>) -> Result<Json<CreatePlanInfoResponseEntity>,Error > {
+pub async fn create_plan(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<CreatePlanInfoEntity>,db:web::Data<Pool>) -> Result<Json<CreatePlanInfoResponseEntity>,Error > {
+    let mut account:String = "".to_string();
+    let mut token:String = "".to_string();
+
+    account = data.account.clone();
+    token = data.token.clone();
+
+    // 认证
+    let jwt_flag = decode_jwt(token);
+    assert_eq!(jwt_flag, true);
+    // 鉴权
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
+    let a = enforcer.clone();
+    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let mut casbin_flag:bool = false;
+    for k in sheng_huo_ling.iter(){
+        for v in e.iter(){
+            if k == v {
+                casbin_flag = true;
+            }
+        }
+    }
+    assert_eq!(casbin_flag, true);
+
     let mut conn = db.get().await.unwrap();
 
     let base_time = Local::now();
@@ -96,8 +148,32 @@ pub async fn create_plan(data:web::Json<CreatePlanInfoEntity>,db:web::Data<Pool>
 }
 
 
+// 调整进度
 #[post("/plan/adjust_schedule")]
-pub async fn adjust_schedule(data:web::Json<UpdatePlanScheduleEntity>,db:web::Data<Pool>) -> Result<Json<UpdatePlanScheduleResponseEntity>,Error > {
+pub async fn adjust_schedule(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<UpdatePlanScheduleEntity>,db:web::Data<Pool>) -> Result<Json<UpdatePlanScheduleResponseEntity>,Error > {
+    let mut account:String = "".to_string();
+    let mut token:String = "".to_string();
+
+    account = data.account.clone();
+    token = data.token.clone();
+
+    // 认证
+    let jwt_flag = decode_jwt(token);
+    assert_eq!(jwt_flag, true);
+    // 鉴权
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
+    let a = enforcer.clone();
+    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let mut casbin_flag:bool = false;
+    for k in sheng_huo_ling.iter(){
+        for v in e.iter(){
+            if k == v {
+                casbin_flag = true;
+            }
+        }
+    }
+    assert_eq!(casbin_flag, true);
+
     let mut conn = db.get().await.unwrap();
 
     let base_time = Local::now();
@@ -135,7 +211,7 @@ pub async fn adjust_schedule(data:web::Json<UpdatePlanScheduleEntity>,db:web::Da
 }
 
 
-
+// 定时任务 统计接口
 #[get("/plan/statistic_plan")]
 pub async fn statistic_plan(db:web::Data<Pool>) -> impl Responder {
     let base_time = Local::now();
@@ -171,9 +247,32 @@ pub async fn statistic_plan(db:web::Data<Pool>) -> impl Responder {
 }
 
 
-
+// 获取计划plan统计信息
 #[post("/plan/statistic_info")]
-pub async fn statistic_info(data:web::Json<StatisticPlanInfoEntityRequest>,db:web::Data<Pool>) -> Result<Json<StatisticPlanInfoEntity>,Error > {
+pub async fn statistic_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<StatisticPlanInfoEntityRequest>,db:web::Data<Pool>) -> Result<Json<StatisticPlanInfoEntity>,Error > {
+    let mut account:String = "".to_string();
+    let mut token:String = "".to_string();
+
+    account = data.account.clone();
+    token = data.token.clone();
+
+    // 认证
+    let jwt_flag = decode_jwt(token);
+    assert_eq!(jwt_flag, true);
+    // 鉴权
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
+    let a = enforcer.clone();
+    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let mut casbin_flag:bool = false;
+    for k in sheng_huo_ling.iter(){
+        for v in e.iter(){
+            if k == v {
+                casbin_flag = true;
+            }
+        }
+    }
+    assert_eq!(casbin_flag, true);
+
     let mut conn = db.get().await.unwrap();
 
     let statistical_time = data.statistical_time.clone();

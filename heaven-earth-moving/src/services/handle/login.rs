@@ -20,7 +20,7 @@ pub async fn login(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<LoginRequ
     pwd = data.pwd.clone();
 
     // 鉴权
-    let sheng_huo_ling = ["visitor_role","admin_role"];
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
     let a = enforcer.clone();
     let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*name, None);
     let mut casbin_flag:bool = false;
@@ -34,19 +34,19 @@ pub async fn login(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<LoginRequ
     assert_eq!(casbin_flag, true);
 
     let rows = conn.query("select * from admin where account=$1 and password=$2", &[&name,&pwd]).await.unwrap();
-    let role_rows = conn.query("select * from user_role where account=$1",&[&name]).await.unwrap();
+    // let role_rows = conn.query("select * from user_role where account=$1",&[&name]).await.unwrap();
+    //
+    //
+    // let mut roles = Vec::new();
+    // let count = role_rows.len();
+    //
+    //
+    // for  i in 0..count {
+    //     let role = role_rows[i].get("role");
+    //     roles.push(role);
+    // }
 
-
-    let mut roles = Vec::new();
-    let count = role_rows.len();
-
-
-    for  i in 0..count {
-        let role = role_rows[i].get("role");
-        roles.push(role);
-    }
-
-
+    let mut roles = "".to_string();
     let login_result = rows.len();
     match login_result {
         1 => Ok(Json(LoginResponseEntity {
@@ -55,7 +55,7 @@ pub async fn login(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<LoginRequ
             message: "".to_string(),
             data: Some("登陆成功".to_string()),
             token: encode_jwt(name,true),
-            role:roles
+            role:rows[0].get("role")
         })),
         0 => Ok(Json(LoginResponseEntity {
             status: Status::FAIL,

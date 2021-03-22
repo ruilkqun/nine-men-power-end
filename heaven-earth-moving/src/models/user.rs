@@ -37,7 +37,10 @@ pub struct CreateUserInfoEntity {
     pub user_role: String,
     pub user_password: String,
     pub user_phone: String,
-    pub user_note: String
+    pub user_note: String,
+    // 用于创建账号的管理员的token和账户
+    pub token: String,
+    pub account: String
 }
 
 
@@ -53,7 +56,10 @@ pub struct CreateUserInfoResponseEntity {
 pub struct RemoveUserInfoEntity {
     pub user_id: i64,
     pub user_account: String,
-    pub user_phone: String
+    pub user_phone: String,
+    // 用于删除账号的管理员的token和账户
+    pub token: String,
+    pub account: String
 }
 
 
@@ -69,7 +75,10 @@ pub struct RemoveUserInfoResponseEntity {
 pub struct ChangeUserRoleInfoEntity {
     pub user_id: i64,
     pub user_account: String,
-    pub user_role: String
+    pub user_role: String,
+    // 用于改变账号角色的管理员的token和账户
+    pub token: String,
+    pub account: String
 }
 
 

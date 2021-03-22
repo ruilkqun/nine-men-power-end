@@ -1,4 +1,5 @@
 p, zhangwuji, /user/user_info, get, allow
 
 g, zhangwuji, admin_role
-g, linghuochong, visitor_role
+g, linghuchong, visitor_role
+g, ruilkyu, admin_role

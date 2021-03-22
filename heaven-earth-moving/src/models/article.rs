@@ -2,6 +2,15 @@ use serde::{Deserialize,Serialize};
 use crate::models::status::Status;
 use serde_json::Value;
 
+
+// 获取文章分类 总信息 请求体
+#[derive(Deserialize,Debug)]
+pub struct ClassifyInfoRequestEntity {
+    pub token: String,
+    pub account: String
+}
+
+
 // 获取文章分类 总信息 返回体
 #[derive(Serialize,Debug)]
 pub struct ClassifyInfoEntity {
@@ -21,6 +30,8 @@ pub struct ClassifyInfoEntityItem {
 #[derive(Deserialize,Debug)]
 pub struct CreateClassifyInfoEntity {
     pub classify_name: String,
+    pub token: String,
+    pub account: String
 }
 
 
@@ -35,6 +46,8 @@ pub struct CreateClassifyInfoResponseEntity {
 #[derive(Deserialize,Debug)]
 pub struct RemoveClassifyInfoEntity {
     pub classify_id: String,
+    pub token: String,
+    pub account: String
 }
 
 
@@ -50,6 +63,8 @@ pub struct RemoveClassifyInfoResponseEntity {
 pub struct UpdateClassifyInfoEntity {
     pub classify_id: String,
     pub classify_name: String,
+    pub token: String,
+    pub account: String
 }
 
 
@@ -69,6 +84,8 @@ pub struct CreateArticleInfoEntity {
     pub article_title: String,
     pub article_content: Value,
     pub article_image: Vec<String>,
+    pub token: String,
+    pub account: String
     // pub article_create_date: String
 }
 
@@ -79,7 +96,12 @@ pub struct CreateArticleInfoResponseEntity {
     pub result: Status
 }
 
-
+// 获取文章列表 总信息 请求体
+#[derive(Deserialize,Debug)]
+pub struct ArticleListInfoRequestEntity {
+    pub token: String,
+    pub account: String
+}
 
 
 // 获取文章列表 总信息 返回体
@@ -104,6 +126,8 @@ pub struct ArticleListInfoEntityItem {
 #[derive(Deserialize,Debug)]
 pub struct ArticleInfoEntityRequest {
     pub article_id: String,
+    pub token: String,
+    pub account: String
 }
 
 

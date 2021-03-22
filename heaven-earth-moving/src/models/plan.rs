@@ -6,6 +6,9 @@ use crate::models::status::Status;
 #[derive(Deserialize,Debug)]
 pub struct PlanInfoEntityRequest {
     pub status: String,
+    // 用于获取计划信息的管理员的 token和账户
+    pub token: String,
+    pub account: String
 }
 
 
@@ -24,7 +27,7 @@ pub struct PlanInfoEntityItem {
     pub plan_create_date: String,
     pub plan_completed_date: String,
     pub plan_note: String,
-    pub plan_schedule: String
+    pub plan_schedule: String,
 }
 
 
@@ -35,7 +38,10 @@ pub struct CreatePlanInfoEntity {
     pub plan_account: String,
     pub plan_note: String,
     pub plan_schedule: String,
-    pub plan_status: String
+    pub plan_status: String,
+    // 用于创建计划的管理员的 token和账户
+    pub token: String,
+    pub account: String
 }
 
 
@@ -51,7 +57,10 @@ pub struct CreatePlanInfoResponseEntity {
 pub struct UpdatePlanScheduleEntity {
     pub plan_id: i64,
     pub plan_account: String,
-    pub plan_schedule: String
+    pub plan_schedule: String,
+    // 用于 更新计划进度的管理员的 token和账户
+    pub token: String,
+    pub account: String
 }
 
 
@@ -67,6 +76,9 @@ pub struct UpdatePlanScheduleResponseEntity {
 #[derive(Deserialize,Debug)]
 pub struct StatisticPlanInfoEntityRequest {
     pub statistical_time: String,
+    // 用于 获取 计划执行情况的管理员的 token和账户
+    pub token: String,
+    pub account: String
 }
 
 
