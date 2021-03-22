@@ -2,11 +2,17 @@ use actix_web::{ web, Responder, Error };
 use deadpool_postgres::{ Manager, Pool };
 use actix_web::{ get,post };
 use actix_web::web::Json;
-use crate::models::user::{ UserInfoEntity,UserInfoEntityItem,CreateUserInfoResponseEntity,CreateUserInfoEntity,RemoveUserInfoEntity,RemoveUserInfoResponseEntity };
+use crate::models::user::{ UserInfoEntity,UserInfoEntityItem,CreateUserInfoResponseEntity,CreateUserInfoEntity,RemoveUserInfoEntity,RemoveUserInfoResponseEntity,UserInfoEntityRequest };
 use crate::models::status::Status;
 use chrono::prelude::*;
 use crypto::md5::Md5;
 use crypto::digest::Digest;
+
+use std::sync::RwLock;
+use casbin::{Enforcer, CoreApi};
+use std::io::Read;
+
+use crate::utils::jwt::decode_jwt;
 
 
 #[get("/user")]
@@ -18,8 +24,32 @@ pub async fn get_user(db:web::Data<Pool>) -> impl Responder {
 }
 
 
-#[get("/user/user_info")]
-pub async fn get_user_info(db:web::Data<Pool>) -> Result<Json<UserInfoEntity>,Error > {
+#[post("/user/user_info")]
+pub async fn get_user_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<UserInfoEntityRequest>,db:web::Data<Pool>) -> Result<Json<UserInfoEntity>,Error > {
+    let mut account:String = "".to_string();
+    let mut token:String = "".to_string();
+
+    account = data.account.clone();
+    token = data.token.clone();
+
+    // 认证
+    let jwt_flag = decode_jwt(token);
+    assert_eq!(jwt_flag, true);
+    // 鉴权
+    let sheng_huo_ling = ["search_role","admin_role"];
+    let a = enforcer.clone();
+    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let mut casbin_flag:bool = false;
+    for k in sheng_huo_ling.iter(){
+        for v in e.iter(){
+            if k == v {
+                casbin_flag = true;
+            }
+        }
+    }
+    assert_eq!(casbin_flag, true);
+
+
     let mut conn = db.get().await.unwrap();
     let user_info = conn.query("select * from admin", &[]).await.unwrap();
 

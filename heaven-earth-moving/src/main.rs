@@ -7,7 +7,7 @@ pub mod services;
 pub mod utils;
 pub mod models;
 
-use actix_web::{ web,App,HttpServer };
+use actix_web::{ web,App,HttpServer,HttpResponse };
 use actix_web::middleware::Logger;
 use actix_web::rt::System;
 use actix_cors::Cors;
@@ -17,27 +17,20 @@ use std::fs::File;
 use std::io::prelude::*;
 use crate::services::config::ActixWebConfig;
 
-
-use actix_casbin_auth::casbin::{ DefaultModel, FileAdapter, Result };
-use actix_casbin_auth::CasbinService;
-use actix_casbin_auth::casbin::function_map::key_match2;
-use diesel_adapter::DieselAdapter;
-
 use env_logger::Env;
 use chrono::Local;
 use std::thread;
 use std::io::Write;
 use db::create_pg_pool;
-
 use tokio::task;
-
-use services::handle::user::get_user;
-use services::handle::login::login;
-
 use services::factory::api_routes;
-
-
 use crate::utils::delay_statistical_plan_count::schedule_statistic_plan;
+
+use casbin::prelude::*;
+use casbin::{DefaultModel, Enforcer, FileAdapter, RbacApi};
+use std::boxed::Box;
+use std::io;
+use std::sync::RwLock;
 
 
 #[actix_web::main]
@@ -95,18 +88,15 @@ async fn main() -> std::io::Result<()> {
     };
 
 
-    // let m = DefaultModel::from_file("rbac_model.conf").await.unwrap();
-    // let a = FileAdapter::new("rbac_policy.csv");  //You can also use diesel-adapter or sqlx-adapter
-    // // let a = DieselAdapter::new("postgres://taiji:zhangsanfeng@localhost:5432/taiji",8)?;
-    // let casbin_middleware = CasbinService::new(m,a).await?;
+    let model = DefaultModel::from_file("./casbin/rbac_model.conf")
+        .await
+        .unwrap();
+    let adapter = FileAdapter::new("./casbin/rbac_policy.csv");
 
-    // casbin_middleware
-    //     .write()
-    //     .await
-    //     .get_role_manager()
-    //     .write()
-    //     .unwrap()
-    //     .matching_fn(Some(key_match2), None);
+    let e = Enforcer::new(model,adapter)
+        .await
+        .unwrap();
+    let e = web::Data::new(RwLock::new(e)); // wrap enforcer into actix-state
 
 
     let pool = create_pg_pool().await;
@@ -119,6 +109,7 @@ async fn main() -> std::io::Result<()> {
                 .data(pool.clone())
                 .data(web::PayloadConfig::new(1 << 25))
                 .data(web::JsonConfig::default().limit(1024 * 1024 * 50))
+                .app_data(e.clone())
                 .wrap(
                     Cors::default()
                         .allow_any_header()

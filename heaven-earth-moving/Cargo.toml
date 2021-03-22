@@ -33,12 +33,6 @@ tokio = { version = "1.2.0", features = ["full"] }
 # 认证
 jsonwebtoken = "7"
 
-# 鉴权
-actix-casbin= {version = "0.4.2", default-features = false, features = [ "runtime-tokio" ]}
-actix-casbin-auth = {version = "0.4.4", default-features = false, features = [ "runtime-tokio" ]}
-## 从postgresql读取rbac_policy信息
-diesel-adapter = { version = "0.9.0", features = ["postgres"] }
-
 # 跨域
 #actix-cors = "0.5"
 actix-cors = { git = "https://github.com/andy128k/actix-extras.git", branch = "update-dependencies" }
@@ -60,3 +54,8 @@ rs-snowflake = "*"
 
 # base64
 base64 = "0.13.0"
+
+# 权限
+casbin = "2.0.6"
+
+#actix-casbin-auth = "0.4.4"

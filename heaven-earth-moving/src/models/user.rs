@@ -2,6 +2,15 @@ use serde::{Deserialize,Serialize};
 use crate::models::status::Status;
 
 
+
+// 获取账户总信息 请求体
+#[derive(Deserialize,Debug)]
+pub struct UserInfoEntityRequest {
+    pub token: String,
+    pub account: String
+}
+
+
 // 获取账户总信息 返回体
 #[derive(Serialize,Debug)]
 pub struct UserInfoEntity {

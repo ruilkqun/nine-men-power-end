@@ -1,1 +1,4 @@
-# 策略数据记录在数据库
+p, zhangwuji, /user/user_info, get, allow
+
+g, zhangwuji, admin_role
+g, linghuochong, visitor_role
