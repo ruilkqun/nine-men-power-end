@@ -1,8 +1,8 @@
 use actix_web::{ web, Responder, Error };
 use deadpool_postgres::{ Manager, Pool };
-use actix_web::{ get,post };
+use actix_web::{ get,post,put };
 use actix_web::web::Json;
-use crate::models::user::{ UserInfoEntity,UserInfoEntityItem,CreateUserInfoResponseEntity,CreateUserInfoEntity,RemoveUserInfoEntity,RemoveUserInfoResponseEntity,UserInfoEntityRequest };
+use crate::models::user::{ UserInfoEntity,UserInfoEntityItem,CreateUserInfoResponseEntity,CreateUserInfoEntity,RemoveUserInfoEntity,RemoveUserInfoResponseEntity,UserInfoEntityRequest,ChangeUserRoleInfoEntity,ChangeUserRoleInfoResponseEntity };
 use crate::models::status::Status;
 use chrono::prelude::*;
 use crypto::md5::Md5;
@@ -104,7 +104,7 @@ pub async fn create_user(data:web::Json<CreateUserInfoEntity>,db:web::Data<Pool>
                 role = "admin_role,editor_role,visitor_role".to_string();
                 break;
             } else {
-                role = format!("{}",v);
+                role = format!("{}",user_role);
                 break;
             }
         }
@@ -155,6 +155,50 @@ pub async fn remove_user(data:web::Json<RemoveUserInfoEntity>,db:web::Data<Pool>
         Err(e) => { println!("删除用户失败!失败原因:{:?}",e);
             Ok(
                     Json(RemoveUserInfoResponseEntity {
+                    result: Status::FAIL,
+                })
+            )
+        },
+    }
+}
+
+
+
+#[put("/user/change_account_role")]
+pub async fn change_user_role(data:web::Json<ChangeUserRoleInfoEntity>,db:web::Data<Pool>) -> Result<Json<ChangeUserRoleInfoResponseEntity>,Error > {
+    let mut conn = db.get().await.unwrap();
+
+    let user_id = data.user_id.clone();
+    let user_account = data.user_account.clone();
+    let user_role = data.user_role.clone();
+
+
+    let mut role = "".to_string();
+    let tmp = user_role.split(',');
+    for v in tmp {
+        if v == "全选" {
+            role = "admin_role,editor_role,visitor_role".to_string();
+            break;
+        } else {
+            role = format!("{}",user_role);
+            break;
+        }
+    }
+
+
+    let change_result = conn.execute("update  admin set role=$1 where id=$2 and account=$3", &[&role,&user_id,&user_account]).await;
+
+    match change_result {
+        Ok(_) => { println!("更新账户角色成功!");
+            Ok(
+                    Json(ChangeUserRoleInfoResponseEntity {
+                    result: Status::SUCCESS,
+                })
+            )
+        },
+        Err(e) => { println!("更新账户角色失败!失败原因:{:?}",e);
+            Ok(
+                    Json(ChangeUserRoleInfoResponseEntity {
                     result: Status::FAIL,
                 })
             )

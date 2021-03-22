@@ -62,3 +62,19 @@ pub struct RemoveUserInfoEntity {
 pub struct RemoveUserInfoResponseEntity {
     pub result: Status
 }
+
+
+// 改变账户 角色信息 请求体
+#[derive(Deserialize,Debug)]
+pub struct ChangeUserRoleInfoEntity {
+    pub user_id: i64,
+    pub user_account: String,
+    pub user_role: String
+}
+
+
+// 改变账户 角色信息 返回体
+#[derive(Serialize)]
+pub struct ChangeUserRoleInfoResponseEntity {
+    pub result: Status
+}

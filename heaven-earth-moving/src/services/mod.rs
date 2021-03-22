@@ -17,6 +17,7 @@ pub mod factory {
             .service(user::get_user_info)
             .service(user::create_user)
             .service(user::remove_user)
+            .service(user::change_user_role)
             .service(plan::get_plan_info)
             .service(plan::create_plan)
             .service(plan::adjust_schedule)
