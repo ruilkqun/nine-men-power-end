@@ -59,6 +59,7 @@ pub async fn get_user_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<U
         let tmp = UserInfoEntityItem {
             user_id: user_info[i].get("id"),
             user_account: user_info[i].get("account"),
+            user_role: user_info[i].get("role"),
             user_phone: user_info[i].get("phone"),
             user_note: user_info[i].get("note"),
             user_create_date: user_info[i].get("create_date"),
@@ -86,12 +87,31 @@ pub async fn create_user(data:web::Json<CreateUserInfoEntity>,db:web::Data<Pool>
     let password = md5.result_str();
 
     let user_account = data.user_account.clone();
+    let user_role = data.user_role.clone();
     let user_password = password.clone();
     let user_phone = data.user_phone.clone();
     let user_note = data.user_note.clone();
     let user_create_date = format_time.clone();
 
-    let insert_result = conn.execute("insert into admin(account,password,phone,note,create_date) values ($1,$2,$3,$4,$5)", &[&user_account,&user_password,&user_phone,&user_note,&user_create_date]).await;
+
+    let mut role = "".to_string();
+    if user_role == "".to_string() {
+            role = "visitor_role".to_string();
+    } else {
+        let tmp = user_role.split(',');
+        for v in tmp {
+            if v == "全选" {
+                role = "admin_role,editor_role,visitor_role".to_string();
+                break;
+            } else {
+                role = format!("{}",v);
+                break;
+            }
+        }
+    }
+
+
+    let insert_result = conn.execute("insert into admin(account,password,phone,note,create_date,role) values ($1,$2,$3,$4,$5,$6)", &[&user_account,&user_password,&user_phone,&user_note,&user_create_date,&role]).await;
 
     match insert_result {
         Ok(_) => { println!("创建用户成功!");
