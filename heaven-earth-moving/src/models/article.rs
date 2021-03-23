@@ -126,6 +126,7 @@ pub struct ArticleListInfoEntityItem {
 #[derive(Deserialize,Debug)]
 pub struct ArticleInfoEntityRequest {
     pub article_id: String,
+    pub article_title: String,
     pub token: String,
     pub account: String
 }

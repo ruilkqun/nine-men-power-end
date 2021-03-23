@@ -381,9 +381,12 @@ pub async fn get_article_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Jso
 
     let mut conn = db.get().await.unwrap();
     let article_id = data.article_id.clone();
-    // article_id 全局唯一，最多一条返回
-    let mut article_info= conn.query("select * from article where article_id=$1", &[&article_id]).await.unwrap();
+    let article_title = data.article_title.clone();
+
+    // article_id和article_title 全局唯一，最多一条返回
+    let mut article_info= conn.query("select * from article where article_id=$1 or article_title=$2", &[&article_id,&article_title]).await.unwrap();
     let article_content = article_info[0].get("article_content");
+
 
     Ok(Json( ArticleInfoEntityResponse {
         article_content
