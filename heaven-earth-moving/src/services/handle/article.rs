@@ -281,7 +281,7 @@ pub async fn create_article(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<
     }
 
 
-    let insert_result = conn.execute("insert into article(article_id,article_account,article_classify,article_title,article_content,article_create_date) values ($1,$2,$3,$4,$5,$6)", &[&article_id,&article_account,&article_classify,&article_title,&article_content,&article_create_date]).await;
+    let insert_result = conn.execute("insert into article(article_id,article_account,article_classify,article_title,article_content,article_create_date) values ($1,$2,$3,$4,$5,$6) on conflict (article_account,article_title) do update set article_classify=$3,article_title=$4,article_content=$5", &[&article_id,&article_account,&article_classify,&article_title,&article_content,&article_create_date]).await;
 
     match insert_result {
         Ok(_) => { println!("创建文章成功!");
