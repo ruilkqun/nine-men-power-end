@@ -12,7 +12,7 @@
  Target Server Version : 130002
  File Encoding         : 65001
 
- Date: 22/03/2021 14:03:44
+ Date: 23/03/2021 16:58:35
 */
 
 
@@ -103,8 +103,8 @@ COMMENT ON COLUMN "public"."admin"."role" IS '角色';
 -- ----------------------------
 BEGIN;
 INSERT INTO "public"."admin" VALUES (1, 'zhangwuji', 'f492f6a473bdae86915f2940f0d59718', '15201776595', '明教教主', '2021-03-20 00:00:00', 'admin_role');
-INSERT INTO "public"."admin" VALUES (8, 'ruilkyu', '22c38af1fa77de7c8356b5083a371ce6', '15201776595', '管理员账号', '2021-03-22 10:09:56', 'admin_role');
 INSERT INTO "public"."admin" VALUES (6, 'linghuchong', 'a64a6d4d6d4f5bbdedb45df84d5cce76', '15201776595', '独孤九剑', '2021-03-13 23:24:28', 'editor_role');
+INSERT INTO "public"."admin" VALUES (8, 'ruilkyu', '22c38af1fa77de7c8356b5083a371ce6', '15201776595', '管理员账号', '2021-03-22 10:09:56', 'admin_role');
 COMMIT;
 
 -- ----------------------------
@@ -133,6 +133,7 @@ COMMENT ON COLUMN "public"."article"."article_create_date" IS '创建时间';
 -- ----------------------------
 BEGIN;
 INSERT INTO "public"."article" VALUES ('6778573087333027841', 'linghuchong', '独孤九剑', '破剑式', '{"markdown":"# 风太师叔\n\n![fengtaishishu.jpeg](http://192.168.1.118:8088/images/6778573061923934209.png)"}', '2021-03-19 15:09:23');
+INSERT INTO "public"."article" VALUES ('6779937466653741057', 'ruilkyu', '', 'change-your-bone部署', '{"markdown":"::: hljs-center\n\n# change-your-bone部署\n\n:::\n\n\n# 一、技术栈\n\n## 前端：vue+elementui\n## 后端：actix-web(rust)\n\n## 代理：nginx\n## 数据库: postgresql\n\n# 二、具体部署\n## 2.1 、数据库\n### admin表: 账户的具体信息(账号、密码、手机、备注、创建日期、角色等)\n### article表：文章的具体信息(ID、账户、分类、标题、内容、创建时间等)\n### article_classify表：文章的分类信息(ID、分类名等)\n### image_id表：文章和后端存储的图片对应信息(文章ID、图片ID)\n### plan表：制定计划的信息(账户、创建时间、完成时间、备注、进度表、是否完成)\n### plan_statistic表：计划统计信息(统计时间、进行中总数、已完成总数)\n### casbin_rule表：鉴权信息(p_type、v0、v1、v2、v3、v4、v5)\n\n## 2.2、后端\n### 部署目录\n![deploy_dir.png](http://192.168.1.118:8088/images/6779937432415637505.png)\n```\n1、heaven-earth-moving:后端二进制文件(启动方式: ./heaven-earth-moving)\n```\n\n```\n2、qiaofeng.toml:后端 配置文件\n\n[actix_web_config]\nserver = \"0.0.0.0\"\nport = 9000\n\n\n[postgresql_config]\nserver = \"127.0.0.1\"\nport = 5432\nuser = \"taiji\"\npwd = \"zhangsanfeng\"\ndb = \"taiji\"\n\n\n[backend_config]\nhost = \"192.168.1.118\"\nport = 9000\nnginx_host = \"192.168.1.118\"\nnginx_port = 8088\nimages = \"http://192.168.1.118:8088/images/\"\n```\n\n```\n3、psql_start:容器化部署postgresql\n```\n![postgresql_config.png](http://192.168.1.118:8088/images/6780047719630245889.png)\n\n```\n3.1、pv目录:数据持久化目录\n\n3.2、docker-compose.yml:容器编排文件\n\n\nversion: \"3\"\nservices:\n  db:\n    container_name: pg\n    restart: always\n    image: postgres:latest\n    privileged: true\n    ports:\n      - 5432:5432\n    environment:\n      POSTGRES_PASSWORD: 2020Successful!\n      PGDATA: /var/lib/postgresql/data/pgdata\n    volumes:\n      - ./pv:/var/lib/postgresql/data/pgdata\n```\n\n```\n4、cabin:接口鉴权\n```\n![casbin_config.png](http://192.168.1.118:8088/images/6780048518489968641.png)\n\n```\n4.1、rbac_model.conf\n4.2、rbac_policy.csv \n```\n\n5、nginx:容器化部署nginx\n![nginx_config.png](http://192.168.1.118:8088/images/6780049360731377665.png)\n\n```\n5.1、nginx:nginx持久化配置目录\n5.2、static:图片持久化目录\n5.3、docker-compose.yml:容器编排文件\n\nversion: \"2\"\nservices:\n  rustenv:\n    image: nginx\n    container_name: fengqingyang\n    restart: unless-stopped\n    ports:\n    - 8088:80\n    environment:\n    - TZ=Asia/Shanghai\n    volumes:\n    - ./nginx:/etc/nginx\n    - ./static:/root/static\n```"}', '2021-03-23 09:30:57');
 COMMIT;
 
 -- ----------------------------
@@ -153,6 +154,7 @@ COMMENT ON COLUMN "public"."article_classify"."classify_name" IS '分类名';
 -- ----------------------------
 BEGIN;
 INSERT INTO "public"."article_classify" VALUES ('6777786291095474177', '独孤九剑');
+INSERT INTO "public"."article_classify" VALUES ('6779930581884080129', '小记');
 COMMIT;
 
 -- ----------------------------
@@ -197,6 +199,13 @@ COMMENT ON COLUMN "public"."image_id"."article_image_id" IS '图片ID';
 -- ----------------------------
 BEGIN;
 INSERT INTO "public"."image_id" VALUES (2, '6778573087333027841', '6778573061923934209');
+INSERT INTO "public"."image_id" VALUES (3, '6779937466653741057', '6779937432415637505');
+INSERT INTO "public"."image_id" VALUES (4, '6779938380697440257', '6779937432415637505');
+INSERT INTO "public"."image_id" VALUES (5, '6780045829580394497', '6780045804146135041');
+INSERT INTO "public"."image_id" VALUES (6, '6780047010495074305', '6780046985778040833');
+INSERT INTO "public"."image_id" VALUES (7, '6780048219750666241', '6780047719630245889');
+INSERT INTO "public"."image_id" VALUES (8, '6780048735348068353', '6780048518489968641');
+INSERT INTO "public"."image_id" VALUES (9, '6780049977478615041', '6780049360731377665');
 COMMIT;
 
 -- ----------------------------
@@ -255,7 +264,6 @@ INSERT INTO "public"."plan" VALUES (26, 'ruilkyu', '2021-03-19 10:03:40', '2021-
 INSERT INTO "public"."plan" VALUES (31, 'ruilkyu', '2021-03-19 11:12:18', '2021-03-19 14:41:20', '乾坤大挪移 后端添加 删除图片接口', '100%', '已完成');
 INSERT INTO "public"."plan" VALUES (33, 'ruilkyu', '2021-03-19 14:53:14', '2021-03-19 14:54:16', '后端 CreateArticleInfoEntity结构体 添加pub article_create_date: String字段', '100%', '已完成');
 INSERT INTO "public"."plan" VALUES (34, 'ruilkyu', '2021-03-19 15:25:32', '2021-03-19 15:39:12', '后端 添加 文章列表信息接口', '100%', '已完成');
-INSERT INTO "public"."plan" VALUES (40, 'ruilkyu', '2021-03-20 19:40:35', '', '后端接口 添加jwt认证', '1%', '进行中');
 INSERT INTO "public"."plan" VALUES (25, 'ruilkyu', '2021-03-19 09:50:21', '2021-03-19 15:43:22', '前端添加 文章列表展示页', '100%', '已完成');
 INSERT INTO "public"."plan" VALUES (35, 'ruilkyu', '2021-03-19 15:51:48', '2021-03-19 17:56:24', '添加 markdown 展示页', '100%', '已完成');
 INSERT INTO "public"."plan" VALUES (1, 'zhangwuji', '2021-03-14 15:46:00', ' ', '学九阳神功', '80%', '进行中');
@@ -269,10 +277,39 @@ INSERT INTO "public"."plan" VALUES (41, 'ruilkyu', '2021-03-20 23:42:49', '2021-
 INSERT INTO "public"."plan" VALUES (44, 'ruilkyu', '2021-03-22 08:58:40', '2021-03-22 10:10:20', '用户 管理 添加 角色展示列', '100%', '已完成');
 INSERT INTO "public"."plan" VALUES (45, 'ruilkyu', '2021-03-22 09:30:11', '2021-03-22 10:10:34', '前端 添加管理员 增加角色模块', '100%', '已完成');
 INSERT INTO "public"."plan" VALUES (46, 'ruilkyu', '2021-03-22 09:30:30', '2021-03-22 10:10:37', '后端 添加管理员 增加角色类型', '100%', '已完成');
-INSERT INTO "public"."plan" VALUES (39, 'ruilkyu', '2021-03-20 19:35:20', '', 'casbin添加角色 admin_role、editor_role和visitor_role', '1%', '进行中');
 INSERT INTO "public"."plan" VALUES (48, 'ruilkyu', '2021-03-22 13:20:49', '2021-03-22 13:46:43', '后端 添加角色role更改接口', '100%', '已完成');
 INSERT INTO "public"."plan" VALUES (47, 'ruilkyu', '2021-03-22 11:15:40', '2021-03-22 13:46:49', '前端 用户管理 权限管理添加 角色role更改功能', '100%', '已完成');
 INSERT INTO "public"."plan" VALUES (38, 'ruilkyu', '2021-03-20 00:24:09', '2021-03-22 13:46:58', 'casbin用户权限管理', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (49, 'ruilkyu', '2021-03-22 14:11:47', '2021-03-22 14:11:59', '后端 login接口添加鉴权 并返回token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (50, 'ruilkyu', '2021-03-22 14:14:03', '2021-03-22 14:14:55', '后端 获取用户信息/user/user_info接口 添加认证和鉴权', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (40, 'ruilkyu', '2021-03-20 19:40:35', '2021-03-22 14:37:29', '后端接口 添加jwt认证', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (39, 'ruilkyu', '2021-03-20 19:35:20', '2021-03-22 14:14:42', 'casbin添加角色 admin_role、editor_role和visitor_role', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (52, 'ruilkyu', '2021-03-22 14:20:35', '2021-03-22 14:27:39', '前端 创建账户 请求体 添加 当前账户的账户名和token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (51, 'ruilkyu', '2021-03-22 14:15:57', '2021-03-22 14:27:46', '后端 创建账户/user/create_user接口 添加认证和鉴权', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (53, 'ruilkyu', '2021-03-22 14:27:29', '2021-03-22 14:34:03', '后端 删除账户 添加 当前账户的账户名和token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (54, 'ruilkyu', '2021-03-22 14:27:57', '2021-03-22 14:34:08', '前端 删除账户 添加 当前账户的账户名和token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (55, 'ruilkyu', '2021-03-22 14:33:29', '2021-03-22 14:37:20', '前端 改变账户角色 添加 当前账户的账户名和token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (56, 'ruilkyu', '2021-03-22 14:33:56', '2021-03-22 14:37:23', '后端 改变账户角色 /user/change_account_role接口  添加 当前账户的账户名和token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (57, 'ruilkyu', '2021-03-22 14:39:43', '2021-03-22 14:48:18', '后端获取计划plan信息 /plan/plan_info接口  添加 当前账户的账户名和token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (58, 'ruilkyu', '2021-03-22 14:40:02', '2021-03-22 14:48:25', '前端获取计划plan信息  添加 当前账户的账户名和token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (59, 'ruilkyu', '2021-03-22 14:49:53', '2021-03-22 14:55:57', '前端 创建 计划plan 添加 创建账户和相应token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (60, 'ruilkyu', '2021-03-22 14:50:05', '2021-03-22 14:56:03', '后端 创建 计划plan 添加 创建账户和相应token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (61, 'ruilkyu', '2021-03-22 15:00:05', '2021-03-22 15:03:27', '前后端 计划plan 调整进度 添加 账户名和token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (62, 'ruilkyu', '2021-03-22 15:06:49', '2021-03-22 15:12:04', '前后端 获取计划plan统计信息 添加 当前账户和相应的token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (64, 'ruilkyu', '2021-03-22 15:27:35', '2021-03-22 15:29:26', '前后端 文章分类 模块 添加当前账户及相应token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (65, 'ruilkyu', '2021-03-22 15:30:30', '2021-03-22 15:33:04', '前后端 创建文章分类 模块 添加当前账户及相应token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (66, 'ruilkyu', '2021-03-22 15:33:56', '2021-03-22 15:36:30', '前后端 移除文章分类 模块 添加当前账户及相应token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (67, 'ruilkyu', '2021-03-22 15:40:50', '2021-03-22 15:46:28', '前后端 更新文章分类 模块 添加当前账户及相应token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (63, 'ruilkyu', '2021-03-22 15:12:53', '2021-03-22 15:58:55', '前后端 获取文章信息 添加 当前账户和相应的token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (68, 'ruilkyu', '2021-03-22 15:47:47', '2021-03-22 15:58:59', '前后端 创建文章内容 模块 添加当前账户及相应token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (69, 'ruilkyu', '2021-03-22 16:00:40', '2021-03-22 16:03:27', '前后端 获取文章列表 模块 添加当前账户及相应token', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (70, 'ruilkyu', '2021-03-22 21:53:04', '2021-03-22 21:53:19', '添加 头像 个人信息', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (71, 'ruilkyu', '2021-03-23 09:38:14', '2021-03-23 10:24:23', '前端 小记编写完后 直接跳转展示页', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (72, 'ruilkyu', '2021-03-23 10:29:55', '2021-03-23 16:02:39', '前后端 添加 文章 编辑 功能', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (74, 'ruilkyu', '2021-03-23 10:56:29', '2021-03-23 16:02:44', '后端 根据 插入文章逻辑 修改', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (75, 'ruilkyu', '2021-03-23 14:38:43', '2021-03-23 16:02:52', '前后端 添加 更改密码 功能', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (73, 'ruilkyu', '2021-03-23 10:54:58', '2021-03-23 16:03:00', '前端 小记 添加 根据 路由参数 获取文章内容', '100%', '已完成');
+INSERT INTO "public"."plan" VALUES (76, 'ruilkyu', '2021-03-23 16:03:32', '2021-03-23 16:21:55', '前后端 添加 修改 手机号 功能', '100%', '已完成');
 COMMIT;
 
 -- ----------------------------
@@ -507,16 +544,69 @@ INSERT INTO "public"."plan_statistic" VALUES (224, '2021-03-22 12:30:01', 7, 40)
 INSERT INTO "public"."plan_statistic" VALUES (225, '2021-03-22 13:00:01', 7, 40);
 INSERT INTO "public"."plan_statistic" VALUES (226, '2021-03-22 13:30:01', 8, 40);
 INSERT INTO "public"."plan_statistic" VALUES (227, '2021-03-22 14:00:01', 5, 43);
+INSERT INTO "public"."plan_statistic" VALUES (228, '2021-03-22 14:30:01', 6, 48);
+INSERT INTO "public"."plan_statistic" VALUES (229, '2021-03-22 15:00:01', 3, 57);
+INSERT INTO "public"."plan_statistic" VALUES (230, '2021-03-22 15:30:01', 4, 60);
+INSERT INTO "public"."plan_statistic" VALUES (231, '2021-03-22 16:00:01', 3, 65);
+INSERT INTO "public"."plan_statistic" VALUES (232, '2021-03-22 16:30:01', 3, 66);
+INSERT INTO "public"."plan_statistic" VALUES (233, '2021-03-22 17:00:01', 3, 66);
+INSERT INTO "public"."plan_statistic" VALUES (234, '2021-03-22 17:30:01', 3, 66);
+INSERT INTO "public"."plan_statistic" VALUES (235, '2021-03-22 18:00:01', 3, 66);
+INSERT INTO "public"."plan_statistic" VALUES (236, '2021-03-22 18:30:01', 3, 66);
+INSERT INTO "public"."plan_statistic" VALUES (237, '2021-03-22 19:00:01', 3, 66);
+INSERT INTO "public"."plan_statistic" VALUES (238, '2021-03-22 19:30:01', 3, 66);
+INSERT INTO "public"."plan_statistic" VALUES (239, '2021-03-22 20:00:01', 3, 66);
+INSERT INTO "public"."plan_statistic" VALUES (240, '2021-03-22 20:30:01', 3, 66);
+INSERT INTO "public"."plan_statistic" VALUES (241, '2021-03-22 21:00:01', 3, 66);
+INSERT INTO "public"."plan_statistic" VALUES (242, '2021-03-22 21:30:01', 3, 66);
+INSERT INTO "public"."plan_statistic" VALUES (243, '2021-03-22 22:00:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (244, '2021-03-22 22:30:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (245, '2021-03-22 23:00:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (246, '2021-03-22 23:30:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (247, '2021-03-23 00:00:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (248, '2021-03-23 00:30:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (249, '2021-03-23 01:00:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (250, '2021-03-23 01:30:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (251, '2021-03-23 02:00:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (252, '2021-03-23 02:30:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (253, '2021-03-23 03:00:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (254, '2021-03-23 03:30:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (255, '2021-03-23 04:00:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (256, '2021-03-23 04:30:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (257, '2021-03-23 05:00:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (258, '2021-03-23 05:30:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (259, '2021-03-23 06:00:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (260, '2021-03-23 06:30:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (261, '2021-03-23 07:00:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (262, '2021-03-23 07:30:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (263, '2021-03-23 08:00:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (264, '2021-03-23 08:30:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (265, '2021-03-23 09:00:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (266, '2021-03-23 09:30:01', 3, 67);
+INSERT INTO "public"."plan_statistic" VALUES (267, '2021-03-23 10:00:01', 4, 67);
+INSERT INTO "public"."plan_statistic" VALUES (268, '2021-03-23 10:30:01', 4, 68);
+INSERT INTO "public"."plan_statistic" VALUES (269, '2021-03-23 11:00:01', 6, 68);
+INSERT INTO "public"."plan_statistic" VALUES (270, '2021-03-23 11:30:01', 6, 68);
+INSERT INTO "public"."plan_statistic" VALUES (271, '2021-03-23 12:00:01', 6, 68);
+INSERT INTO "public"."plan_statistic" VALUES (272, '2021-03-23 12:30:01', 6, 68);
+INSERT INTO "public"."plan_statistic" VALUES (273, '2021-03-23 13:00:01', 6, 68);
+INSERT INTO "public"."plan_statistic" VALUES (274, '2021-03-23 13:30:01', 6, 68);
+INSERT INTO "public"."plan_statistic" VALUES (275, '2021-03-23 14:00:01', 6, 68);
+INSERT INTO "public"."plan_statistic" VALUES (276, '2021-03-23 14:30:01', 6, 68);
+INSERT INTO "public"."plan_statistic" VALUES (277, '2021-03-23 15:00:01', 7, 68);
+INSERT INTO "public"."plan_statistic" VALUES (278, '2021-03-23 15:30:01', 7, 68);
+INSERT INTO "public"."plan_statistic" VALUES (279, '2021-03-23 16:00:01', 7, 68);
+INSERT INTO "public"."plan_statistic" VALUES (280, '2021-03-23 16:30:01', 3, 73);
 COMMIT;
 
 -- ----------------------------
 -- Alter sequences owned by
 -- ----------------------------
 SELECT setval('"public"."article_id_seq"', 2, false);
-SELECT setval('"public"."image_id_seq"', 3, true);
-SELECT setval('"public"."plan_id_seq"', 49, true);
-SELECT setval('"public"."plan_statistic_id_seq"', 228, true);
-SELECT setval('"public"."user_id_seq"', 9, true);
+SELECT setval('"public"."image_id_seq"', 10, true);
+SELECT setval('"public"."plan_id_seq"', 77, true);
+SELECT setval('"public"."plan_statistic_id_seq"', 281, true);
+SELECT setval('"public"."user_id_seq"', 10, true);
 
 -- ----------------------------
 -- Primary Key structure for table admin
