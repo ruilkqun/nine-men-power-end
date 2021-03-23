@@ -443,7 +443,7 @@ pub async fn get_person_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json
 
 
     let mut conn = db.get().await.unwrap();
-    let account_info = conn.query("select * from admin", &[]).await.unwrap();
+    let account_info = conn.query("select * from admin where account=$1", &[&account]).await.unwrap();
 
     let article_info = conn.query("select count(*) from article where article_account=$1", &[&account]).await.unwrap();
 
