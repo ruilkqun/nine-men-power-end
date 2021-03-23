@@ -47,15 +47,15 @@ pub async fn get_plan_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<P
     let mut plan_info= conn.query("select * from plan", &[]).await.unwrap();
 
     if status == "".to_string() {
-            plan_info = conn.query("select * from plan", &[]).await.unwrap();
+            plan_info = conn.query("select * from plan where account=$1 and status=\'进行中\'", &[&account]).await.unwrap();
     } else {
         let tmp = status.split(',');
         for v in tmp {
             if v == "全选" {
-                plan_info = conn.query("select * from plan", &[]).await.unwrap();
+                plan_info = conn.query("select * from plan where account=$1", &[&account]).await.unwrap();
                 break;
             } else {
-                plan_info = conn.query("select * from plan where status=$1", &[&v]).await.unwrap();
+                plan_info = conn.query("select * from plan where account=$1 and status=$2", &[&account,&v]).await.unwrap();
                 break;
             }
         }

@@ -329,7 +329,7 @@ pub async fn get_list_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<A
 
     let mut conn = db.get().await.unwrap();
 
-    let mut list_info= conn.query("select * from article", &[]).await.unwrap();
+    let mut list_info= conn.query("select * from article where article_account=$1", &[&account]).await.unwrap();
 
     let mut data = Vec::new();
     let count = list_info.len();
