@@ -87,3 +87,22 @@ pub struct ChangeUserRoleInfoEntity {
 pub struct ChangeUserRoleInfoResponseEntity {
     pub result: Status
 }
+
+
+// 改变账户 密码信息 请求体
+#[derive(Deserialize,Debug)]
+pub struct ChangeUserPasswordRequestEntity {
+    pub old_password: String,
+    pub new_password: String,
+    pub confirm_new_password: String,
+    // 用于改变账号密码的管理员的token和账户
+    pub token: String,
+    pub account: String
+}
+
+
+// 改变账户 密码信息 返回体
+#[derive(Serialize)]
+pub struct ChangeUserPasswordResponseEntity {
+    pub result: Status
+}

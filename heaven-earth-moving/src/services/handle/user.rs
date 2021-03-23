@@ -2,7 +2,7 @@ use actix_web::{ web, Responder, Error };
 use deadpool_postgres::{ Manager, Pool };
 use actix_web::{ get,post,put };
 use actix_web::web::Json;
-use crate::models::user::{ UserInfoEntity,UserInfoEntityItem,CreateUserInfoResponseEntity,CreateUserInfoEntity,RemoveUserInfoEntity,RemoveUserInfoResponseEntity,UserInfoEntityRequest,ChangeUserRoleInfoEntity,ChangeUserRoleInfoResponseEntity };
+use crate::models::user::{ UserInfoEntity,UserInfoEntityItem,CreateUserInfoResponseEntity,CreateUserInfoEntity,RemoveUserInfoEntity,RemoveUserInfoResponseEntity,UserInfoEntityRequest,ChangeUserRoleInfoEntity,ChangeUserRoleInfoResponseEntity,ChangeUserPasswordRequestEntity,ChangeUserPasswordResponseEntity };
 use crate::models::status::Status;
 use chrono::prelude::*;
 use crypto::md5::Md5;
@@ -275,5 +275,77 @@ pub async fn change_user_role(enforcer:web::Data<RwLock<Enforcer>>,data:web::Jso
                 })
             )
         },
+    }
+}
+
+
+// 改变账户密码
+#[put("/user/change_password")]
+pub async fn change_password(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<ChangeUserPasswordRequestEntity>,db:web::Data<Pool>) -> Result<Json<ChangeUserPasswordResponseEntity>,Error > {
+    let mut account:String = "".to_string();
+    let mut token:String = "".to_string();
+
+    account = data.account.clone();
+    token = data.token.clone();
+
+    // 认证
+    let jwt_flag = decode_jwt(token);
+    assert_eq!(jwt_flag, true);
+    // 鉴权
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
+    let a = enforcer.clone();
+    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let mut casbin_flag:bool = false;
+    for k in sheng_huo_ling.iter(){
+        for v in e.iter(){
+            if k == v {
+                casbin_flag = true;
+            }
+        }
+    }
+    assert_eq!(casbin_flag, true);
+
+    let mut conn = db.get().await.unwrap();
+
+    let old_password = data.old_password.clone();
+    let new_password = data.new_password.clone();
+    let confirm_new_password = data.confirm_new_password.clone();
+
+    let mut md5 = Md5::new();
+    md5.input_str(&*old_password);
+    let password = md5.result_str();
+
+    let mut md5_new = Md5::new();
+    md5_new.input_str(&*new_password);
+    let new_password_md5 = md5_new.result_str();
+
+    let query_password_result = conn.query("select * from admin where password=$1", &[&password]).await.unwrap();
+
+
+    if query_password_result.len() > 0 && new_password.clone() == confirm_new_password.clone(){
+        let insert_result = conn.execute("update admin set password=$1 where account=$2", &[&new_password_md5,&account]).await;
+
+        match insert_result {
+            Ok(_) => { println!("更改密码成功!");
+                Ok(
+                        Json(ChangeUserPasswordResponseEntity {
+                        result: Status::SUCCESS,
+                    })
+                )
+            },
+            Err(e) => { println!("更改密码失败!失败原因:{:?}",e);
+                Ok(
+                        Json(ChangeUserPasswordResponseEntity {
+                        result: Status::FAIL,
+                    })
+                )
+            },
+        }
+    } else {
+        Ok(
+                Json(ChangeUserPasswordResponseEntity {
+                result: Status::FAIL,
+            })
+        )
     }
 }
