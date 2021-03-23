@@ -221,29 +221,45 @@ pub async fn statistic_plan(db:web::Data<Pool>) -> impl Responder {
 
     let mut statistic_running:i64 = 0;
     let mut statistic_completed:i64 = 0;
+    let mut account_running:String = "".to_string();
+    let mut account_completed:String = "".to_string();
 
-    let statistic_running_result = conn.query("select count(status) from plan where status='进行中'", &[]).await.unwrap();
-    let statistic_completed_result = conn.query("select count(status) from plan where status='已完成'", &[]).await.unwrap();
+    let statistic_running_result = conn.query("select count(status),account from plan where status='进行中'  GROUP BY account", &[]).await.unwrap();
+    let statistic_completed_result = conn.query("select count(status),account from plan where status='已完成'  GROUP BY account", &[]).await.unwrap();
 
-    if statistic_running_result.len() != 0 {
-        statistic_running = statistic_running_result[0].get("count");
-    }
-
-    if statistic_completed_result.len() != 0 {
-        statistic_completed = statistic_completed_result[0].get("count");
-    }
-
-    let insert_statistic_result = conn.execute("insert into plan_statistic(statistical_time,statistical_running_count,statistical_completed_count) values ($1,$2,$3) on conflict(statistical_time) do update set statistical_running_count=$2,statistical_completed_count=$3", &[&scheduler_time,&statistic_running,&statistic_completed]).await;
-
-
-    match insert_statistic_result {
-        Ok(_) => {
-            format!("统计数据成功!")
-        },
-        Err(e) => {
-            format!("统计数据失败!失败原因:{:?}",e)
+    if statistic_running_result.len() != 0 && statistic_completed_result.len() != 0 {
+        for i in 0..statistic_running_result.len()  {
+            statistic_running = statistic_running_result[i].get("count");
+            account_running = statistic_running_result[i].get("account");
+            for k in 0..statistic_completed_result.len()  {
+                statistic_completed = statistic_completed_result[k].get("count");
+                account_completed = statistic_completed_result[k].get("account");
+                if account_running == account_completed {
+                    let insert_running_result = conn.execute("insert into plan_statistic(statistical_time,statistical_running_count,statistical_completed_count,account) values ($1,$2,$3,$4) on conflict(statistical_time) do update set statistical_running_count=$2,statistical_completed_count=$3", &[&scheduler_time,&statistic_running,&statistic_completed,&account_running]).await;
+                        match insert_running_result {
+                            Ok(_) => {
+                                format!("统计数据成功!");
+                            },
+                            Err(e) => {
+                                format!("统计数据失败!失败原因:{:?}",e);
+                            }
+                    }
+                }
+            }
+            statistic_completed = 0;
+            let insert_running_result = conn.execute("insert into plan_statistic(statistical_time,statistical_running_count,statistical_completed_count,account) values ($1,$2,$3,$4) on conflict(statistical_time) do update set statistical_running_count=$2,statistical_completed_count=$3", &[&scheduler_time,&statistic_running,&statistic_completed,&account_running]).await;
+            match insert_running_result {
+                Ok(_) => {
+                    format!("统计数据成功!");
+                },
+                Err(e) => {
+                    format!("统计数据失败!失败原因:{:?}",e);
+                }
+        }
         }
     }
+
+    format!("统计数据成功!")
 }
 
 
@@ -323,7 +339,7 @@ pub async fn statistic_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<
     println!("end_tmp1:{:?}",end_tmp1);
 
     /// 最终计划 入库时间精度为秒 即%Y-%m-%d %H:%M:%S，故取begin_tmp，end_tmp即可
-    let statistic_info = conn.query("select * from plan_statistic where statistical_time >= $1 and statistical_time <= $2 order by statistical_time asc", &[&begin_tmp,&end_tmp]).await.unwrap();
+    let statistic_info = conn.query("select * from plan_statistic where statistical_time >= $1 and statistical_time <= $2 and account=$3 order by statistical_time asc", &[&begin_tmp,&end_tmp,&account]).await.unwrap();
 
 
     let mut data_statistical_time = Vec::new();
