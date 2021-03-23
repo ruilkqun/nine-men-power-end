@@ -19,6 +19,7 @@ pub mod factory {
             .service(user::remove_user)
             .service(user::change_user_role)
             .service(user::change_password)
+            .service(user::change_phone)
             .service(plan::get_plan_info)
             .service(plan::create_plan)
             .service(plan::adjust_schedule)

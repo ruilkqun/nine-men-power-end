@@ -2,7 +2,7 @@ use actix_web::{ web, Responder, Error };
 use deadpool_postgres::{ Manager, Pool };
 use actix_web::{ get,post,put };
 use actix_web::web::Json;
-use crate::models::user::{ UserInfoEntity,UserInfoEntityItem,CreateUserInfoResponseEntity,CreateUserInfoEntity,RemoveUserInfoEntity,RemoveUserInfoResponseEntity,UserInfoEntityRequest,ChangeUserRoleInfoEntity,ChangeUserRoleInfoResponseEntity,ChangeUserPasswordRequestEntity,ChangeUserPasswordResponseEntity };
+use crate::models::user::{ UserInfoEntity,UserInfoEntityItem,CreateUserInfoResponseEntity,CreateUserInfoEntity,RemoveUserInfoEntity,RemoveUserInfoResponseEntity,UserInfoEntityRequest,ChangeUserRoleInfoEntity,ChangeUserRoleInfoResponseEntity,ChangeUserPasswordRequestEntity,ChangeUserPasswordResponseEntity,ChangeUserPhoneRequestEntity,ChangeUserPhoneResponseEntity };
 use crate::models::status::Status;
 use chrono::prelude::*;
 use crypto::md5::Md5;
@@ -344,6 +344,70 @@ pub async fn change_password(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json
     } else {
         Ok(
                 Json(ChangeUserPasswordResponseEntity {
+                result: Status::FAIL,
+            })
+        )
+    }
+}
+
+
+// 改变账户手机
+#[put("/user/change_phone")]
+pub async fn change_phone(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<ChangeUserPhoneRequestEntity>,db:web::Data<Pool>) -> Result<Json<ChangeUserPhoneResponseEntity>,Error > {
+    let mut account:String = "".to_string();
+    let mut token:String = "".to_string();
+
+    account = data.account.clone();
+    token = data.token.clone();
+
+    // 认证
+    let jwt_flag = decode_jwt(token);
+    assert_eq!(jwt_flag, true);
+    // 鉴权
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
+    let a = enforcer.clone();
+    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let mut casbin_flag:bool = false;
+    for k in sheng_huo_ling.iter(){
+        for v in e.iter(){
+            if k == v {
+                casbin_flag = true;
+            }
+        }
+    }
+    assert_eq!(casbin_flag, true);
+
+    let mut conn = db.get().await.unwrap();
+
+    let old_phone = data.old_phone.clone();
+    let new_phone = data.new_phone.clone();
+    let confirm_new_phone = data.confirm_new_phone.clone();
+
+    let query_phone_result = conn.query("select * from admin where phone=$1", &[&old_phone]).await.unwrap();
+
+
+    if query_phone_result.len() > 0 && new_phone.clone() == confirm_new_phone.clone(){
+        let insert_result = conn.execute("update admin set phone=$1 where account=$2", &[&new_phone,&account]).await;
+
+        match insert_result {
+            Ok(_) => { println!("更改密码成功!");
+                Ok(
+                        Json(ChangeUserPhoneResponseEntity {
+                        result: Status::SUCCESS,
+                    })
+                )
+            },
+            Err(e) => { println!("更改密码失败!失败原因:{:?}",e);
+                Ok(
+                        Json(ChangeUserPhoneResponseEntity {
+                        result: Status::FAIL,
+                    })
+                )
+            },
+        }
+    } else {
+        Ok(
+                Json(ChangeUserPhoneResponseEntity {
                 result: Status::FAIL,
             })
         )
