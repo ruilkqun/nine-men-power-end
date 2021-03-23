@@ -20,6 +20,7 @@ pub mod factory {
             .service(user::change_user_role)
             .service(user::change_password)
             .service(user::change_phone)
+            .service(user::get_person_info)
             .service(plan::get_plan_info)
             .service(plan::create_plan)
             .service(plan::adjust_schedule)

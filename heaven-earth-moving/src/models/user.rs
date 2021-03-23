@@ -124,3 +124,21 @@ pub struct ChangeUserPhoneRequestEntity {
 pub struct ChangeUserPhoneResponseEntity {
     pub result: Status
 }
+
+
+// 获取个人信息 请求体
+#[derive(Deserialize,Debug)]
+pub struct PersonalInfoRequestEntity {
+    pub token: String,
+    pub account: String
+}
+
+
+// 获取个人信息 返回体
+#[derive(Serialize,Debug)]
+pub struct PersonalInfoResponseEntity {
+    pub account: String,
+    pub role: String,
+    pub phone: String,
+    pub article_count: i64
+}

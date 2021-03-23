@@ -2,7 +2,7 @@ use actix_web::{ web, Responder, Error };
 use deadpool_postgres::{ Manager, Pool };
 use actix_web::{ get,post,put };
 use actix_web::web::Json;
-use crate::models::user::{ UserInfoEntity,UserInfoEntityItem,CreateUserInfoResponseEntity,CreateUserInfoEntity,RemoveUserInfoEntity,RemoveUserInfoResponseEntity,UserInfoEntityRequest,ChangeUserRoleInfoEntity,ChangeUserRoleInfoResponseEntity,ChangeUserPasswordRequestEntity,ChangeUserPasswordResponseEntity,ChangeUserPhoneRequestEntity,ChangeUserPhoneResponseEntity };
+use crate::models::user::{ UserInfoEntity,UserInfoEntityItem,CreateUserInfoResponseEntity,CreateUserInfoEntity,RemoveUserInfoEntity,RemoveUserInfoResponseEntity,UserInfoEntityRequest,ChangeUserRoleInfoEntity,ChangeUserRoleInfoResponseEntity,ChangeUserPasswordRequestEntity,ChangeUserPasswordResponseEntity,ChangeUserPhoneRequestEntity,ChangeUserPhoneResponseEntity,PersonalInfoRequestEntity,PersonalInfoResponseEntity };
 use crate::models::status::Status;
 use chrono::prelude::*;
 use crypto::md5::Md5;
@@ -412,4 +412,49 @@ pub async fn change_phone(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<Ch
             })
         )
     }
+}
+
+
+// 获取 个人信息
+#[post("/user/personal_info")]
+pub async fn get_person_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<PersonalInfoRequestEntity>,db:web::Data<Pool>) -> Result<Json<PersonalInfoResponseEntity>,Error > {
+    let mut account:String = "".to_string();
+    let mut token:String = "".to_string();
+
+    account = data.account.clone();
+    token = data.token.clone();
+
+    // 认证
+    let jwt_flag = decode_jwt(token);
+    assert_eq!(jwt_flag, true);
+    // 鉴权
+    let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
+    let a = enforcer.clone();
+    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let mut casbin_flag:bool = false;
+    for k in sheng_huo_ling.iter(){
+        for v in e.iter(){
+            if k == v {
+                casbin_flag = true;
+            }
+        }
+    }
+    assert_eq!(casbin_flag, true);
+
+
+    let mut conn = db.get().await.unwrap();
+    let account_info = conn.query("select * from admin", &[]).await.unwrap();
+
+    let article_info = conn.query("select count(*) from article where article_account=$1", &[&account]).await.unwrap();
+
+    let data = PersonalInfoResponseEntity {
+        account: account_info[0].get("account"),
+        role: account_info[0].get("role"),
+        phone: account_info[0].get("phone"),
+        article_count: article_info[0].get("count")
+    };
+
+    Ok(Json(
+        data
+    ))
 }
