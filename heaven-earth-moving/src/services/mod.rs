@@ -31,8 +31,10 @@ pub mod factory {
             .service(article::remove_classify)
             .service(article::update_classify)
             .service(image::upload_img)
-            .service(article::create_article)
             .service(image::delete_img)
+            .service(image::upload_user_img)
+            .service(image::get_user_img)
+            .service(article::create_article)
             .service(article::get_list_info)
             .service(article::get_article_info)
     }

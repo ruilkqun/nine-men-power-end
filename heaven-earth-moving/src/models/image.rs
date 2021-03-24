@@ -31,3 +31,35 @@ pub struct DeleteImageEntity {
 pub struct DeleteImageResponseEntity {
     pub result: Status
 }
+
+
+// 创建上传用户头像 请求体
+#[derive(Deserialize,Debug)]
+pub struct UploadUserImageEntity {
+    pub base64data: String,
+    pub token: String,
+    pub account: String
+}
+
+
+// 创建上传用户头像  返回体
+#[derive(Serialize)]
+pub struct UploadUserImageResponseEntity {
+    pub path:String,
+    pub result: Status
+}
+
+// 创建获取用户头像 请求体
+#[derive(Deserialize,Debug)]
+pub struct GetUserImageEntity {
+    pub token: String,
+    pub account: String
+}
+
+
+// 创建获取用户头像  返回体
+#[derive(Serialize)]
+pub struct GetUserImageResponseEntity {
+    pub path:String,
+    pub result: Status
+}
