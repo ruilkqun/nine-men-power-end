@@ -6,8 +6,10 @@ services:
     restart: unless-stopped
     ports:
     - 8088:80
+    - 8080:8080
     environment:
     - TZ=Asia/Shanghai
     volumes:
     - ./nginx:/etc/nginx
     - ./static:/root/static
+    - ./dist:/root/change-your-bone
