@@ -1,27 +1,20 @@
 use actix_web::{ web, Responder, Error };
-use deadpool_postgres::{ Manager, Pool };
+use deadpool_postgres::Pool;
 use actix_web::{ get,post };
 use actix_web::web::Json;
-use tokio_postgres::Row;
 use crate::models::plan::{ PlanInfoEntityRequest,PlanInfoEntity,PlanInfoEntityItem,CreatePlanInfoEntity,CreatePlanInfoResponseEntity,UpdatePlanScheduleEntity,UpdatePlanScheduleResponseEntity,
 StatisticPlanInfoEntityRequest,StatisticPlanInfoEntity,StatisticPlanInfoEntityTimeItem,StatisticPlanInfoEntityRunItem,StatisticPlanInfoEntityCompletedItem};
 use crate::models::status::Status;
 use chrono::prelude::*;
-
 use std::sync::RwLock;
 use casbin::{Enforcer, CoreApi};
-use std::io::Read;
-
 use crate::utils::jwt::decode_jwt;
 
 // 获取计划plan信息
 #[post("/plan/plan_info")]
 pub async fn get_plan_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<PlanInfoEntityRequest>,db:web::Data<Pool>) -> Result<Json<PlanInfoEntity>,Error > {
-    let mut account:String = "".to_string();
-    let mut token:String = "".to_string();
-
-    account = data.account.clone();
-    token = data.token.clone();
+    let account:String = data.account.clone();
+    let token:String = data.token.clone();
 
     // 认证
     let jwt_flag = decode_jwt(token);
@@ -29,7 +22,7 @@ pub async fn get_plan_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<P
     // 鉴权
     let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
     let a = enforcer.clone();
-    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
     let mut casbin_flag:bool = false;
     for k in sheng_huo_ling.iter(){
         for v in e.iter(){
@@ -40,7 +33,7 @@ pub async fn get_plan_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<P
     }
     assert_eq!(casbin_flag, true);
 
-    let mut conn = db.get().await.unwrap();
+    let conn = db.get().await.unwrap();
 
     let status = data.status.clone();
 
@@ -90,11 +83,9 @@ pub async fn get_plan_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<P
 // 创建计划plan
 #[post("/plan/create_plan")]
 pub async fn create_plan(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<CreatePlanInfoEntity>,db:web::Data<Pool>) -> Result<Json<CreatePlanInfoResponseEntity>,Error > {
-    let mut account:String = "".to_string();
-    let mut token:String = "".to_string();
+    let account:String = data.account.clone();
+    let token:String = data.token.clone();
 
-    account = data.account.clone();
-    token = data.token.clone();
 
     // 认证
     let jwt_flag = decode_jwt(token);
@@ -102,7 +93,7 @@ pub async fn create_plan(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<Cre
     // 鉴权
     let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
     let a = enforcer.clone();
-    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
     let mut casbin_flag:bool = false;
     for k in sheng_huo_ling.iter(){
         for v in e.iter(){
@@ -113,7 +104,7 @@ pub async fn create_plan(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<Cre
     }
     assert_eq!(casbin_flag, true);
 
-    let mut conn = db.get().await.unwrap();
+    let conn = db.get().await.unwrap();
 
     let base_time = Local::now();
     let format_time = base_time.format("%Y-%m-%d %H:%M:%S").to_string();
@@ -151,11 +142,9 @@ pub async fn create_plan(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<Cre
 // 调整进度
 #[post("/plan/adjust_schedule")]
 pub async fn adjust_schedule(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<UpdatePlanScheduleEntity>,db:web::Data<Pool>) -> Result<Json<UpdatePlanScheduleResponseEntity>,Error > {
-    let mut account:String = "".to_string();
-    let mut token:String = "".to_string();
+    let account:String = data.account.clone();
+    let token:String = data.token.clone();
 
-    account = data.account.clone();
-    token = data.token.clone();
 
     // 认证
     let jwt_flag = decode_jwt(token);
@@ -163,7 +152,7 @@ pub async fn adjust_schedule(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json
     // 鉴权
     let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
     let a = enforcer.clone();
-    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
     let mut casbin_flag:bool = false;
     for k in sheng_huo_ling.iter(){
         for v in e.iter(){
@@ -174,7 +163,7 @@ pub async fn adjust_schedule(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json
     }
     assert_eq!(casbin_flag, true);
 
-    let mut conn = db.get().await.unwrap();
+    let conn = db.get().await.unwrap();
 
     let base_time = Local::now();
     let format_time = base_time.format("%Y-%m-%d %H:%M:%S").to_string();
@@ -217,23 +206,23 @@ pub async fn statistic_plan(db:web::Data<Pool>) -> impl Responder {
     let base_time = Local::now();
     let scheduler_time = base_time.format("%Y-%m-%d %H:%M:%S").to_string();
     println!("Begin Statistic Plan Count {}",scheduler_time);
-    let mut conn = db.get().await.unwrap();
+    let conn = db.get().await.unwrap();
 
-    let mut statistic_running:i64 = 0;
-    let mut statistic_completed:i64 = 0;
-    let mut account_running:String = "".to_string();
-    let mut account_completed:String = "".to_string();
+    // let mut statistic_running:i64 = 0;
+    // let mut statistic_completed:i64 = 0;
+    // let mut account_running:String = "".to_string();
+    // let mut account_completed:String = "".to_string();
 
     let statistic_running_result = conn.query("select count(status),account from plan where status='进行中'  GROUP BY account", &[]).await.unwrap();
     let statistic_completed_result = conn.query("select count(status),account from plan where status='已完成'  GROUP BY account", &[]).await.unwrap();
 
     if statistic_running_result.len() != 0 && statistic_completed_result.len() != 0 {
         for i in 0..statistic_running_result.len()  {
-            statistic_running = statistic_running_result[i].get("count");
-            account_running = statistic_running_result[i].get("account");
+            let statistic_running:i64 = statistic_running_result[i].get("count");
+            let account_running:String = statistic_running_result[i].get("account");
             for k in 0..statistic_completed_result.len()  {
-                statistic_completed = statistic_completed_result[k].get("count");
-                account_completed = statistic_completed_result[k].get("account");
+                let statistic_completed:i64 = statistic_completed_result[k].get("count");
+                let account_completed:String = statistic_completed_result[k].get("account");
                 if account_running == account_completed {
                     let insert_running_result = conn.execute("insert into plan_statistic(statistical_time,statistical_running_count,statistical_completed_count,account) values ($1,$2,$3,$4) on conflict(statistical_time) do update set statistical_running_count=$2,statistical_completed_count=$3", &[&scheduler_time,&statistic_running,&statistic_completed,&account_running]).await;
                         match insert_running_result {
@@ -246,7 +235,7 @@ pub async fn statistic_plan(db:web::Data<Pool>) -> impl Responder {
                     }
                 }
             }
-            statistic_completed = 0;
+            let statistic_completed:i64 = 0;
             let insert_running_result = conn.execute("insert into plan_statistic(statistical_time,statistical_running_count,statistical_completed_count,account) values ($1,$2,$3,$4) on conflict(statistical_time) do update set statistical_running_count=$2,statistical_completed_count=$3", &[&scheduler_time,&statistic_running,&statistic_completed,&account_running]).await;
             match insert_running_result {
                 Ok(_) => {
@@ -266,11 +255,9 @@ pub async fn statistic_plan(db:web::Data<Pool>) -> impl Responder {
 // 获取计划plan统计信息
 #[post("/plan/statistic_info")]
 pub async fn statistic_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<StatisticPlanInfoEntityRequest>,db:web::Data<Pool>) -> Result<Json<StatisticPlanInfoEntity>,Error > {
-    let mut account:String = "".to_string();
-    let mut token:String = "".to_string();
+    let account:String = data.account.clone();
+    let token:String = data.token.clone();
 
-    account = data.account.clone();
-    token = data.token.clone();
 
     // 认证
     let jwt_flag = decode_jwt(token);
@@ -278,7 +265,7 @@ pub async fn statistic_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<
     // 鉴权
     let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
     let a = enforcer.clone();
-    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
     let mut casbin_flag:bool = false;
     for k in sheng_huo_ling.iter(){
         for v in e.iter(){
@@ -289,7 +276,7 @@ pub async fn statistic_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<
     }
     assert_eq!(casbin_flag, true);
 
-    let mut conn = db.get().await.unwrap();
+    let conn = db.get().await.unwrap();
 
     let statistical_time = data.statistical_time.clone();
 
@@ -334,11 +321,11 @@ pub async fn statistic_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<
         };
     }
 
-    /// 最初设想 入库时间精度为天 即%Y-%m-%d,故计算到begin_tmp1，end_tmp1
+    // 最初设想 入库时间精度为天 即%Y-%m-%d,故计算到begin_tmp1，end_tmp1
     println!("begin_tmp1:{:?}",begin_tmp1);
     println!("end_tmp1:{:?}",end_tmp1);
 
-    /// 最终计划 入库时间精度为秒 即%Y-%m-%d %H:%M:%S，故取begin_tmp，end_tmp即可
+    // 最终计划 入库时间精度为秒 即%Y-%m-%d %H:%M:%S，故取begin_tmp，end_tmp即可
     let statistic_info = conn.query("select * from plan_statistic where statistical_time >= $1 and statistical_time <= $2 and account=$3 order by statistical_time asc", &[&begin_tmp,&end_tmp,&account]).await.unwrap();
 
 

@@ -1,8 +1,6 @@
-#[macro_use]
 use delay_timer::prelude::*;
 
 use delay_timer::entity::DelayTimerBuilder;
-use chrono::prelude::*;
 use delay_timer::timer::task::TaskBuilder;
 
 use curl::easy::Easy;

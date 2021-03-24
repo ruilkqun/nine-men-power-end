@@ -1,5 +1,5 @@
 use actix_web::{ web, Responder, Error };
-use deadpool_postgres::{ Manager, Pool };
+use deadpool_postgres::Pool;
 use actix_web::{ get,post,put };
 use actix_web::web::Json;
 use crate::models::user::{ UserInfoEntity,UserInfoEntityItem,CreateUserInfoResponseEntity,CreateUserInfoEntity,RemoveUserInfoEntity,RemoveUserInfoResponseEntity,UserInfoEntityRequest,ChangeUserRoleInfoEntity,ChangeUserRoleInfoResponseEntity,ChangeUserPasswordRequestEntity,ChangeUserPasswordResponseEntity,ChangeUserPhoneRequestEntity,ChangeUserPhoneResponseEntity,PersonalInfoRequestEntity,PersonalInfoResponseEntity };
@@ -7,17 +7,14 @@ use crate::models::status::Status;
 use chrono::prelude::*;
 use crypto::md5::Md5;
 use crypto::digest::Digest;
-
 use std::sync::RwLock;
 use casbin::{Enforcer, CoreApi};
-use std::io::Read;
-
 use crate::utils::jwt::decode_jwt;
 
 
 #[get("/user")]
 pub async fn get_user(db:web::Data<Pool>) -> impl Responder {
-    let mut conn = db.get().await.unwrap();
+    let conn = db.get().await.unwrap();
     let rows = conn.query("select * from admin", &[]).await.unwrap();
     let v:String = rows[0].get("account");
     format!("{}",v)
@@ -26,11 +23,9 @@ pub async fn get_user(db:web::Data<Pool>) -> impl Responder {
 // 获取 账户信息
 #[post("/user/user_info")]
 pub async fn get_user_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<UserInfoEntityRequest>,db:web::Data<Pool>) -> Result<Json<UserInfoEntity>,Error > {
-    let mut account:String = "".to_string();
-    let mut token:String = "".to_string();
+    let account:String = data.account.clone();
+    let token:String = data.token.clone();
 
-    account = data.account.clone();
-    token = data.token.clone();
 
     // 认证
     let jwt_flag = decode_jwt(token);
@@ -38,7 +33,7 @@ pub async fn get_user_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<U
     // 鉴权
     let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
     let a = enforcer.clone();
-    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
     let mut casbin_flag:bool = false;
     for k in sheng_huo_ling.iter(){
         for v in e.iter(){
@@ -50,7 +45,7 @@ pub async fn get_user_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<U
     assert_eq!(casbin_flag, true);
 
 
-    let mut conn = db.get().await.unwrap();
+    let conn = db.get().await.unwrap();
     let user_info = conn.query("select * from admin", &[]).await.unwrap();
 
     let mut data = Vec::new();
@@ -79,11 +74,8 @@ pub async fn get_user_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<U
 // 创建账户
 #[post("/user/create_user")]
 pub async fn create_user(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<CreateUserInfoEntity>,db:web::Data<Pool>) -> Result<Json<CreateUserInfoResponseEntity>,Error > {
-    let mut account:String = "".to_string();
-    let mut token:String = "".to_string();
-
-    account = data.account.clone();
-    token = data.token.clone();
+    let account:String = data.account.clone();
+    let token:String = data.token.clone();
 
     // 认证
     let jwt_flag = decode_jwt(token);
@@ -91,7 +83,7 @@ pub async fn create_user(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<Cre
     // 鉴权
     let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
     let a = enforcer.clone();
-    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
     let mut casbin_flag:bool = false;
     for k in sheng_huo_ling.iter(){
         for v in e.iter(){
@@ -102,7 +94,7 @@ pub async fn create_user(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<Cre
     }
     assert_eq!(casbin_flag, true);
 
-    let mut conn = db.get().await.unwrap();
+    let conn = db.get().await.unwrap();
 
     let base_time = Local::now();
     let format_time = base_time.format("%Y-%m-%d %H:%M:%S").to_string();
@@ -160,11 +152,8 @@ pub async fn create_user(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<Cre
 // 删除账户
 #[post("/user/remove_user")]
 pub async fn remove_user(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<RemoveUserInfoEntity>,db:web::Data<Pool>) -> Result<Json<RemoveUserInfoResponseEntity>,Error > {
-    let mut account:String = "".to_string();
-    let mut token:String = "".to_string();
-
-    account = data.account.clone();
-    token = data.token.clone();
+    let account:String = data.account.clone();
+    let token:String = data.token.clone();
 
     // 认证
     let jwt_flag = decode_jwt(token);
@@ -172,7 +161,7 @@ pub async fn remove_user(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<Rem
     // 鉴权
     let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
     let a = enforcer.clone();
-    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
     let mut casbin_flag:bool = false;
     for k in sheng_huo_ling.iter(){
         for v in e.iter(){
@@ -183,7 +172,7 @@ pub async fn remove_user(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<Rem
     }
     assert_eq!(casbin_flag, true);
 
-    let mut conn = db.get().await.unwrap();
+    let conn = db.get().await.unwrap();
 
     let user_id = data.user_id.clone();
     let user_account = data.user_account.clone();
@@ -215,11 +204,9 @@ pub async fn remove_user(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<Rem
 
 #[put("/user/change_account_role")]
 pub async fn change_user_role(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<ChangeUserRoleInfoEntity>,db:web::Data<Pool>) -> Result<Json<ChangeUserRoleInfoResponseEntity>,Error > {
-    let mut account:String = "".to_string();
-    let mut token:String = "".to_string();
+    let account:String = data.account.clone();
+    let token:String = data.token.clone();
 
-    account = data.account.clone();
-    token = data.token.clone();
 
     // 认证
     let jwt_flag = decode_jwt(token);
@@ -227,7 +214,7 @@ pub async fn change_user_role(enforcer:web::Data<RwLock<Enforcer>>,data:web::Jso
     // 鉴权
     let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
     let a = enforcer.clone();
-    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
     let mut casbin_flag:bool = false;
     for k in sheng_huo_ling.iter(){
         for v in e.iter(){
@@ -238,7 +225,7 @@ pub async fn change_user_role(enforcer:web::Data<RwLock<Enforcer>>,data:web::Jso
     }
     assert_eq!(casbin_flag, true);
 
-    let mut conn = db.get().await.unwrap();
+    let conn = db.get().await.unwrap();
 
     let user_id = data.user_id.clone();
     let user_account = data.user_account.clone();
@@ -282,11 +269,8 @@ pub async fn change_user_role(enforcer:web::Data<RwLock<Enforcer>>,data:web::Jso
 // 改变账户密码
 #[put("/user/change_password")]
 pub async fn change_password(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<ChangeUserPasswordRequestEntity>,db:web::Data<Pool>) -> Result<Json<ChangeUserPasswordResponseEntity>,Error > {
-    let mut account:String = "".to_string();
-    let mut token:String = "".to_string();
-
-    account = data.account.clone();
-    token = data.token.clone();
+    let account:String = data.account.clone();
+    let token:String = data.token.clone();
 
     // 认证
     let jwt_flag = decode_jwt(token);
@@ -294,7 +278,7 @@ pub async fn change_password(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json
     // 鉴权
     let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
     let a = enforcer.clone();
-    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
     let mut casbin_flag:bool = false;
     for k in sheng_huo_ling.iter(){
         for v in e.iter(){
@@ -305,7 +289,7 @@ pub async fn change_password(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json
     }
     assert_eq!(casbin_flag, true);
 
-    let mut conn = db.get().await.unwrap();
+    let conn = db.get().await.unwrap();
 
     let old_password = data.old_password.clone();
     let new_password = data.new_password.clone();
@@ -354,11 +338,9 @@ pub async fn change_password(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json
 // 改变账户手机
 #[put("/user/change_phone")]
 pub async fn change_phone(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<ChangeUserPhoneRequestEntity>,db:web::Data<Pool>) -> Result<Json<ChangeUserPhoneResponseEntity>,Error > {
-    let mut account:String = "".to_string();
-    let mut token:String = "".to_string();
+    let account:String = data.account.clone();
+    let token:String = data.token.clone();
 
-    account = data.account.clone();
-    token = data.token.clone();
 
     // 认证
     let jwt_flag = decode_jwt(token);
@@ -366,7 +348,7 @@ pub async fn change_phone(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<Ch
     // 鉴权
     let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
     let a = enforcer.clone();
-    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
     let mut casbin_flag:bool = false;
     for k in sheng_huo_ling.iter(){
         for v in e.iter(){
@@ -377,7 +359,7 @@ pub async fn change_phone(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<Ch
     }
     assert_eq!(casbin_flag, true);
 
-    let mut conn = db.get().await.unwrap();
+    let conn = db.get().await.unwrap();
 
     let old_phone = data.old_phone.clone();
     let new_phone = data.new_phone.clone();
@@ -418,11 +400,9 @@ pub async fn change_phone(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<Ch
 // 获取 个人信息
 #[post("/user/personal_info")]
 pub async fn get_person_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<PersonalInfoRequestEntity>,db:web::Data<Pool>) -> Result<Json<PersonalInfoResponseEntity>,Error > {
-    let mut account:String = "".to_string();
-    let mut token:String = "".to_string();
+    let account:String = data.account.clone();
+    let token:String = data.token.clone();
 
-    account = data.account.clone();
-    token = data.token.clone();
 
     // 认证
     let jwt_flag = decode_jwt(token);
@@ -430,7 +410,7 @@ pub async fn get_person_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json
     // 鉴权
     let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
     let a = enforcer.clone();
-    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
     let mut casbin_flag:bool = false;
     for k in sheng_huo_ling.iter(){
         for v in e.iter(){
@@ -442,7 +422,7 @@ pub async fn get_person_info(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json
     assert_eq!(casbin_flag, true);
 
 
-    let mut conn = db.get().await.unwrap();
+    let conn = db.get().await.unwrap();
     let account_info = conn.query("select * from admin where account=$1", &[&account]).await.unwrap();
 
     let article_info = conn.query("select count(*) from article where article_account=$1", &[&account]).await.unwrap();

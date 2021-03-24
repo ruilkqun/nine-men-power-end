@@ -1,5 +1,5 @@
-use actix_web::{ web, Responder,Error };
-use deadpool_postgres::{ Manager, Pool };
+use actix_web::{ web,Error };
+use deadpool_postgres::Pool;
 use crate::models::login::{LoginRequestEntity,LoginResponseEntity};
 use crate::utils::jwt::encode_jwt;
 use actix_web::web::Json;
@@ -8,21 +8,18 @@ use crate::models::status::Status;
 
 use std::sync::RwLock;
 use casbin::{Enforcer, CoreApi};
-use std::io::Read;
 
 #[post("/login")]
 pub async fn login(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<LoginRequestEntity>,db:web::Data<Pool>) -> Result<Json<LoginResponseEntity>,Error > {
-    let mut conn = db.get().await.unwrap();
-    let mut name:String = "".to_string();
-    let mut pwd:String = "".to_string();
+    let conn = db.get().await.unwrap();
+    let name:String = data.account.clone();
+    let pwd:String = data.pwd.clone();
 
-    name = data.account.clone();
-    pwd = data.pwd.clone();
 
     // 鉴权
     let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
     let a = enforcer.clone();
-    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*name, None);
+    let e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*name, None);
     let mut casbin_flag:bool = false;
     for k in sheng_huo_ling.iter(){
         for v in e.iter(){
@@ -46,7 +43,7 @@ pub async fn login(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<LoginRequ
     //     roles.push(role);
     // }
 
-    let mut roles = "".to_string();
+    let roles = "".to_string();
     let login_result = rows.len();
     match login_result {
         1 => Ok(Json(LoginResponseEntity {

@@ -1,14 +1,12 @@
-use actix_web::{ web, Responder, Error };
-use deadpool_postgres::{ Manager, Pool };
-use actix_web::{ get,post };
+use actix_web::{ web, Error };
+use deadpool_postgres::Pool;
+use actix_web::post;
 use actix_web::web::Json;
-use tokio_postgres::Row;
 use crate::models::image::{ UploadImageEntity,UploadImageResponseEntity,DeleteImageEntity,DeleteImageResponseEntity,UploadUserImageEntity,UploadUserImageResponseEntity,GetUserImageEntity,GetUserImageResponseEntity };
 use crate::models::status::Status;
-use chrono::prelude::*;
 use snowflake::SnowflakeIdGenerator;
 
-use base64::{encode, decode};
+use base64::decode;
 use std::io::prelude::*;
 use std::fs::File;
 use std::fs;
@@ -25,7 +23,7 @@ use crate::utils::jwt::decode_jwt;
 #[post("/img/upload_img")]
 pub async fn upload_img(data:web::Json<UploadImageEntity>) -> Result<Json<UploadImageResponseEntity>,Error >  {
     let mut id_generator = SnowflakeIdGenerator::new(1,1);
-    let mut global_id = id_generator.real_time_generate();
+    let global_id = id_generator.real_time_generate();
 
     let path = format!("./nginx/static/images/{:?}.png",global_id);
     let base64_data = data.base64data.clone();
@@ -102,7 +100,7 @@ pub async fn upload_img(data:web::Json<UploadImageEntity>) -> Result<Json<Upload
 
 #[post("/img/delete_img")]
 pub async fn delete_img(data:web::Json<DeleteImageEntity>) -> Result<Json<DeleteImageResponseEntity>,Error >  {
-    let mut global_id = data.image_id.clone();
+    let global_id = data.image_id.clone();
     let path = format!("./nginx/static/images/{}.png",global_id);
 
     println!("path:{:?}",path);
@@ -119,11 +117,9 @@ pub async fn delete_img(data:web::Json<DeleteImageEntity>) -> Result<Json<Delete
 // 上传用户头像
 #[post("/img/upload_user_img")]
 pub async fn upload_user_img(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<UploadUserImageEntity>,db:web::Data<Pool>) -> Result<Json<UploadUserImageResponseEntity>,Error >  {
-    let mut account:String = "".to_string();
-    let mut token:String = "".to_string();
+    let account:String = data.account.clone();
+    let token:String = data.token.clone();
 
-    account = data.account.clone();
-    token = data.token.clone();
 
     // 认证
     let jwt_flag = decode_jwt(token);
@@ -131,7 +127,7 @@ pub async fn upload_user_img(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json
     // 鉴权
     let sheng_huo_ling = ["admin_role","editor_role","visitor_role"];
     let a = enforcer.clone();
-    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
     let mut casbin_flag:bool = false;
     for k in sheng_huo_ling.iter(){
         for v in e.iter(){
@@ -144,7 +140,7 @@ pub async fn upload_user_img(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json
 
 
     let mut id_generator = SnowflakeIdGenerator::new(1,1);
-    let mut global_id = id_generator.real_time_generate();
+    let global_id = id_generator.real_time_generate();
 
     // 放入新的头像
     let path = format!("./nginx/static/images/{:?}.png",global_id);
@@ -152,7 +148,7 @@ pub async fn upload_user_img(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json
     let mut file = File::create(path.clone()).unwrap();
     let write_result = file.write(&decode(base64_data).unwrap()[..]);
 
-    let mut conn = db.get().await.unwrap();
+    let conn = db.get().await.unwrap();
     // 删除之前头像
     let user_image_info = conn.query("select * from user_image_id where account=$1", &[&account]).await.unwrap();
     if user_image_info.len() > 0 {
@@ -232,11 +228,9 @@ pub async fn upload_user_img(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json
 // 获取用户头像
 #[post("/img/get_user_img")]
 pub async fn get_user_img(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<GetUserImageEntity>,db:web::Data<Pool>) -> Result<Json<GetUserImageResponseEntity>,Error > {
-    let mut account: String = "".to_string();
-    let mut token: String = "".to_string();
+    let account: String = data.account.clone();
+    let token: String = data.token.clone();
 
-    account = data.account.clone();
-    token = data.token.clone();
 
     // 认证
     let jwt_flag = decode_jwt(token);
@@ -244,7 +238,7 @@ pub async fn get_user_img(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<Ge
     // 鉴权
     let sheng_huo_ling = ["admin_role", "editor_role", "visitor_role"];
     let a = enforcer.clone();
-    let mut e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
+    let e = a.write().unwrap().get_role_manager().write().unwrap().get_roles(&*account, None);
     let mut casbin_flag: bool = false;
     for k in sheng_huo_ling.iter() {
         for v in e.iter() {
@@ -256,7 +250,7 @@ pub async fn get_user_img(enforcer:web::Data<RwLock<Enforcer>>,data:web::Json<Ge
     assert_eq!(casbin_flag, true);
 
 
-    let mut conn = db.get().await.unwrap();
+    let conn = db.get().await.unwrap();
     // 获取头像 对象 镜像ID
     let user_image_info = conn.query("select * from user_image_id where account=$1", &[&account]).await.unwrap();
     let mut image_id:i64 = 0;

@@ -1,7 +1,6 @@
 use deadpool_postgres::{ Manager, Pool };
 use tokio_postgres::{ Config, NoTls };
 
-use toml::value::*;
 use std::fs::File;
 use std::io::prelude::*;
 use crate::services::config::PostgresqlConfig;

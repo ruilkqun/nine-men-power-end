@@ -1,7 +1,7 @@
 use serde::{ Deserialize, Serialize };
 use chrono::prelude::*;
 use jsonwebtoken::errors::ErrorKind;
-use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation, TokenData};
+use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 
 
 #[derive(Debug, PartialEq,Serialize, Deserialize)]
